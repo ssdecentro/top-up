@@ -1205,7 +1205,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
               <div class="security-row">
                 <div class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>256-bit SSL</div>
                 <div class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>RBI Compliant</div>
-                <div class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>PCI DSS</div>
               </div>
             </div>
           </div>
@@ -1750,29 +1749,72 @@ function handleSummaryPay(){
   const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;
   const f=v=>'\u20B9'+v.toLocaleString('en-IN',{minimumFractionDigits:2});
   const bk=getBankInfo(currentBank);
-  document.getElementById('bankPayAmt').innerHTML='<strong>'+f(total)+'</strong>';
-  document.getElementById('bankOtpAmt').textContent=f(total);
-  document.getElementById('bankInfoAmt').textContent=f(total);
+  const nb=1247.50+currentAmount;
+  const accDisplay=bk.acc?'\u2022\u2022\u2022\u2022'+bk.acc:'Savings A/C';
+  /* Populate success screen directly — no bank login needed for linked banks */
+  document.getElementById('successAmt').textContent='$'+currentAmount.toFixed(2)+' Added!';
+  document.getElementById('successUSD').textContent='$'+currentAmount.toFixed(2);
+  document.getElementById('successDebit').textContent=f(total);
+  document.getElementById('successBank').textContent=bk.name+' '+accDisplay;
+  document.getElementById('successNewBal').textContent='$'+nb.toFixed(2);
+  document.getElementById('txnIdVal').textContent='DEC-TXN-'+Date.now().toString().slice(-10);
   populateBankScreens();
-  goWithLoading('sc-bank','Redirecting to '+bk.name+'...','Secure banking session');
+  goWithLoading('sc-success','Processing payment...','Verifying with '+bk.name);
 }
 
 /* Bank Auth */
 function showBankOTP(){document.getElementById('bankLoginCard').style.display='none';document.getElementById('bankOtpCard').style.display='block';initOtpGrid('bankOtpGrid',6,()=>{document.getElementById('bankAuthBtn').disabled=false})}
 function handleBankAuth(){
   if(getOtp('bankOtpGrid').length<6)return;
-  const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;
-  const f=v=>'\u20B9'+v.toLocaleString('en-IN',{minimumFractionDigits:2});
-  const nb=1247.50+currentAmount;
   const bk=getBankInfo(currentBank);
-  const accDisplay=bk.acc?'\u2022\u2022\u2022\u2022'+bk.acc:'Savings A/C';
-  document.getElementById('successAmt').textContent='$'+currentAmount.toFixed(2)+' Added!';
-  document.getElementById('successUSD').textContent='$'+currentAmount.toFixed(2);
-  document.getElementById('successDebit').textContent=f(total);
-  document.getElementById('successBank').textContent=bk.name+' '+accDisplay;
-  document.getElementById('successNewBal').textContent='$'+nb.toLocaleString('en-US',{minimumFractionDigits:2});
-  document.getElementById('txnIdVal').textContent='DEC-TXN-'+Math.floor(1e9+Math.random()*9e9);
-  goWithLoading('sc-success','Processing payment...','Please wait while we confirm');
+
+  /* ── Promote bank into main grid if not already there ── */
+  const grid=document.querySelector('.bank-grid');
+  let existingCard=document.getElementById('bank-'+currentBank);
+  if(existingCard){
+    /* Card already in grid — just mark it linked */
+    existingCard.classList.add('linked');
+    if(!existingCard.querySelector('.linked-tag')){
+      const tag=document.createElement('span');tag.className='linked-tag';tag.textContent='LINKED';
+      existingCard.appendChild(tag);
+    }
+    const detEl=existingCard.querySelector('.bank-detail');
+    if(detEl&&!detEl.querySelector('.bank-detail-acc')){
+      const accDiv=document.createElement('div');accDiv.className='bank-detail-acc';
+      accDiv.innerHTML='\u2022\u2022\u2022\u2022'+bk.acc;detEl.appendChild(accDiv);
+    }
+  }else{
+    /* Create new card in grid */
+    const card=document.createElement('div');
+    card.className='bank-option linked';
+    card.id='bank-'+currentBank;
+    card.setAttribute('onclick',"selectBank('"+currentBank+"')");
+    card.innerHTML='<div class="bank-radio"></div>'
+      +'<div class="bank-logo" style="background:'+bk.color+';"><span style="font-size:9px;font-weight:800;color:#fff;">'+bk.short+'</span></div>'
+      +'<div class="bank-detail"><div class="bank-detail-name">'+bk.name+'</div><div class="bank-detail-acc">\u2022\u2022\u2022\u2022'+bk.acc+'</div></div>'
+      +'<span class="linked-tag">LINKED</span>';
+    grid.appendChild(card);
+  }
+
+  /* Remove from "Other Banks" dropdown */
+  document.querySelectorAll('.other-bank-item').forEach(item=>{
+    if(item.getAttribute('onclick')&&item.getAttribute('onclick').indexOf("'"+currentBank+"'")!==-1)item.remove();
+  });
+  /* Hide dropdown toggle if no items left */
+  const remaining=document.querySelectorAll('.other-bank-item');
+  if(remaining.length===0){
+    const othersBtn=document.getElementById('othersBtn');if(othersBtn)othersBtn.style.display='none';
+    const othersList=document.getElementById('othersList');if(othersList)othersList.style.display='none';
+  }else{
+    /* Reset toggle text */
+    const toggleBtn=document.getElementById('othersBtn');
+    if(toggleBtn)toggleBtn.querySelector('span').textContent='Other Banks';
+  }
+
+  /* Select the newly linked bank and go back to checkout */
+  selectBank(currentBank);
+  showToast(bk.name+' linked successfully!');
+  goWithLoading('sc-checkout','Bank linked!','Returning to checkout...');
 }
 
 /* Link Account */
@@ -1784,60 +1826,20 @@ function toggleConsent(){
 function handleLinkVerify(){
   if(getOtp('linkOtpGrid').length<6)return;
   const bk=getBankInfo(currentBank);
+  /* Generate and store account number */
   const generatedAcc=String(Math.floor(1000+Math.random()*9000));
   if(BANKS[currentBank])BANKS[currentBank].acc=generatedAcc;
 
-  goWithLoading('sc-checkout','Linking your account...','Verifying with bank');
-  setTimeout(()=>{
-    /* If bank already exists in the grid, just mark it linked & selected */
-    let bankEl=document.getElementById('bank-'+currentBank);
+  /* Populate bank login screen with this bank's details */
+  const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;
+  const f=v=>'\u20B9'+v.toLocaleString('en-IN',{minimumFractionDigits:2});
+  document.getElementById('bankPayAmt').innerHTML='<strong>'+f(total)+'</strong>';
+  document.getElementById('bankOtpAmt').textContent=f(total);
+  document.getElementById('bankInfoAmt').textContent=f(total);
+  populateBankScreens();
 
-    if(!bankEl){
-      /* Bank was in "Other Banks" dropdown — promote it into the main grid */
-      const grid=document.querySelector('.bank-grid');
-      bankEl=document.createElement('div');
-      bankEl.className='bank-option linked selected';
-      bankEl.id='bank-'+currentBank;
-      bankEl.setAttribute('onclick',"selectBank('"+currentBank+"')");
-      bankEl.innerHTML=
-        '<div class="bank-radio"></div>'+
-        '<div class="bank-logo" style="background:'+bk.color+';"><span style="font-size:9px;font-weight:800;color:#fff;">'+bk.short+'</span></div>'+
-        '<div class="bank-detail"><div class="bank-detail-name">'+bk.name+'</div><div class="bank-detail-acc">\u2022\u2022\u2022\u2022'+generatedAcc+'</div></div>'+
-        '<span class="linked-tag">LINKED</span>';
-      grid.appendChild(bankEl);
-
-      /* Remove from the "Other Banks" dropdown */
-      document.querySelectorAll('.other-bank-item').forEach(item=>{
-        if(item.getAttribute('onclick')&&item.getAttribute('onclick').indexOf("'"+currentBank+"'")!==-1){
-          item.remove();
-        }
-      });
-      /* Reset toggle text if no more items */
-      const remaining=document.querySelectorAll('.other-bank-item');
-      const toggleBtn=document.getElementById('othersBtn');
-      if(remaining.length===0){toggleBtn.style.display='none';document.getElementById('othersList').style.display='none';}
-      else{toggleBtn.querySelector('span').textContent='Other Banks';toggleBtn.style.borderColor='';toggleBtn.style.background='';}
-    } else {
-      /* Bank was already in grid — mark as linked */
-      bankEl.classList.add('linked');
-      if(!bankEl.querySelector('.linked-tag')){
-        const tag=document.createElement('span');tag.className='linked-tag';tag.textContent='LINKED';
-        bankEl.appendChild(tag);
-      }
-      if(!bankEl.querySelector('.bank-detail-acc')){
-        const acc=document.createElement('div');acc.className='bank-detail-acc';
-        acc.innerHTML='\u2022\u2022\u2022\u2022'+generatedAcc;
-        bankEl.querySelector('.bank-detail').appendChild(acc);
-      }
-    }
-
-    /* Select the newly linked bank */
-    document.querySelectorAll('.bank-option').forEach(c=>c.classList.remove('selected'));
-    bankEl.classList.add('selected');
-    document.querySelectorAll('.other-bank-item').forEach(o=>o.classList.remove('selected'));
-
-    showToast(bk.name+' linked successfully! Selected for top-up.');
-  },2200);
+  /* Go to bank login screen to complete linking */
+  goWithLoading('sc-bank','Redirecting to '+bk.name+'...','Secure banking session');
 }
 
 /* Copy */
