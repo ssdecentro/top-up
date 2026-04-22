@@ -22,12 +22,12 @@
   --shadow-md:0 4px 12px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.04);
 }
 html{scroll-behavior:smooth;}
-html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#f8fafc;color:var(--fg);-webkit-font-smoothing:antialiased;}
+html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#f8fafc;color:var(--fg);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
 
 /* ═══════════════════════════════════════
    SCREEN SYSTEM
 ═══════════════════════════════════════ */
-.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen{display:none;min-height:100vh;flex-direction:column;overflow-x:hidden;}
 .screen.active{display:flex;}
 
 /* ═══════════════════════════════════════
@@ -40,7 +40,7 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
   position:sticky;top:0;z-index:50;flex-shrink:0;
 }
 .navbar.dark{background:#0f172a;border-bottom:1px solid rgba(255,255,255,.08);}
-.nav-left{display:flex;align-items:center;gap:16px;}
+.nav-left{display:flex;align-items:center;gap:16px;min-width:0;flex:1;}
 .nav-back{
   width:36px;height:36px;border-radius:8px;border:1px solid var(--br);
   background:#fff;display:flex;align-items:center;justify-content:center;
@@ -50,13 +50,13 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 .navbar.dark .nav-back{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.06);}
 .navbar.dark .nav-back:hover{background:rgba(255,255,255,.12);}
 .navbar.dark .nav-back svg{color:#fff;}
-.nav-title{font-size:15px;font-weight:700;color:var(--fg);}
+.nav-title{font-size:15px;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nav-subtitle{font-size:11px;color:var(--mu);font-weight:500;margin-top:1px;}
 .navbar.dark .nav-title{color:#fff;}
 .navbar.dark .nav-subtitle{color:rgba(255,255,255,.45);}
 
 /* Powered by Decentro — nav right */
-.nav-powered{display:flex;align-items:center;gap:8px;}
+.nav-powered{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .nav-powered-text{font-size:11px;color:var(--mu);font-weight:500;white-space:nowrap;}
 .navbar.dark .nav-powered-text{color:rgba(255,255,255,.35);}
 .nav-decentro-logo{height:14px;width:auto;flex-shrink:0;}
@@ -64,9 +64,14 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 @media(max-width:768px){
   .navbar{padding:0 20px;height:56px;}
   .nav-title{font-size:14px;}
+  .nav-powered svg{width:70px;}
 }
 @media(max-width:480px){
-  .navbar{padding:0 16px;}
+  .navbar{padding:0 14px;gap:8px;}
+  .nav-left{gap:10px;}
+  .nav-powered-text{display:none;}
+  .nav-subtitle{display:none;}
+  .nav-title{font-size:13px;}
 }
 
 /* ═══════════════════════════════════════
@@ -75,15 +80,17 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 .page{
   flex:1;padding:48px 40px 64px;
   display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;width:100%;
 }
 @media(max-width:768px){.page{padding:28px 20px 48px;}}
 @media(max-width:480px){.page{padding:20px 16px 40px;}}
 
 /* Content widths */
-.content-sm{width:100%;max-width:540px;}
-.content-md{width:100%;max-width:720px;}
-.content-lg{width:100%;max-width:960px;}
-.content-xl{width:100%;max-width:1140px;}
+.content-sm,.content-md,.content-lg,.content-xl{width:100%;box-sizing:border-box;min-width:0;}
+.content-sm{max-width:540px;}
+.content-md{max-width:720px;}
+.content-lg{max-width:960px;}
+.content-xl{max-width:1140px;}
 
 /* ═══════════════════════════════════════
    CARDS
@@ -120,6 +127,7 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 .btn-outline:hover{border-color:#94a3b8;background:var(--sf);}
 .btn-block{width:100%;justify-content:center;}
 .btn-lg{height:52px;font-size:15px;padding:0 32px;}
+@media(max-width:480px){.btn-lg{height:48px;font-size:14px;padding:0 16px;}}
 
 /* ═══════════════════════════════════════
    FORMS
@@ -135,8 +143,8 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 .form-input:focus{border-color:#000;box-shadow:0 0 0 3px rgba(0,0,0,.06);}
 .form-input::placeholder{color:var(--mu);}
 .form-hint{font-size:11px;color:var(--mu);margin-top:4px;}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-@media(max-width:500px){.form-row{grid-template-columns:1fr;}}
+.form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;}
+@media(max-width:500px){.form-row{grid-template-columns:minmax(0,1fr);}}
 .form-select{
   display:block;width:100%;height:46px;padding:0 14px;
   border:1.5px solid var(--br);border-radius:var(--r2);
@@ -149,17 +157,18 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 /* ═══════════════════════════════════════
    OTP INPUTS
 ═══════════════════════════════════════ */
-.otp-grid{display:flex;gap:10px;justify-content:center;}
+.otp-grid{display:flex;gap:10px;justify-content:center;flex-wrap:nowrap;}
 .otp-input{
   width:48px;height:56px;border-radius:var(--r2);
   border:2px solid var(--br);background:#fff;
   font-family:inherit;font-size:22px;font-weight:700;color:var(--fg);
   text-align:center;outline:none;-webkit-appearance:none;
-  transition:border-color .15s,box-shadow .15s;
+  transition:border-color .15s,box-shadow .15s;flex-shrink:1;min-width:0;
 }
 .otp-input:focus{border-color:#000;background:#fafbfc;box-shadow:0 0 0 3px rgba(0,0,0,.06);}
 .otp-input.filled{border-color:#000;background:#fafbfc;}
-@media(max-width:400px){.otp-input{width:40px;height:48px;font-size:18px;}}
+@media(max-width:480px){.otp-grid{gap:6px;}.otp-input{width:42px;height:50px;font-size:20px;}}
+@media(max-width:380px){.otp-grid{gap:4px;}.otp-input{width:36px;height:44px;font-size:17px;border-radius:8px;}}
 
 /* ═══════════════════════════════════════
    POWERED BY DECENTRO — FOOTER
@@ -169,6 +178,17 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
   display:flex;align-items:center;justify-content:center;gap:8px;
 }
 .powered-footer span{font-size:11px;color:var(--mu);font-weight:500;}
+
+/* Sticky "Powered by Decentro" bottom bar */
+.sticky-powered{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 16px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-top:1px solid var(--br);
+}
+.sticky-powered span{font-size:11px;color:var(--mu);font-weight:500;}
+.sticky-powered.hidden{display:none;}
 
 /* ═══════════════════════════════════════
    INFO / ALERT BOXES
@@ -237,44 +257,134 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 .hero-btn.primary:hover{background:#f0f0f0;box-shadow:0 4px 16px rgba(255,255,255,.1);}
 .hero-btn.secondary{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.1);}
 .hero-btn.secondary:hover{background:rgba(255,255,255,.12);}
-@media(max-width:600px){
+@media(max-width:768px){
   .hero-balance{padding:36px 20px;}
-  .hero-amount{font-size:38px;}
+  .hero-amount{font-size:36px;letter-spacing:-1px;}
+  .hero-sub{font-size:12px;}
+  .hero-actions{gap:8px;}
+  .hero-btn{height:42px;padding:0 20px;font-size:13px;}
+}
+@media(max-width:400px){
+  .hero-amount{font-size:30px;}
+  .hero-actions{flex-direction:column;align-items:stretch;}
+  .hero-btn{justify-content:center;}
 }
 
 /* Holdings grid */
 .holdings-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;
   margin-bottom:28px;
 }
-@media(max-width:900px){.holdings-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:500px){.holdings-grid{grid-template-columns:1fr;}}
+@media(max-width:900px){.holdings-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:500px){.holdings-grid{grid-template-columns:minmax(0,1fr);}}
 .holding-card{
   background:#fff;border:1px solid var(--br);border-radius:var(--r);
   padding:18px;display:flex;align-items:center;gap:14px;
   transition:all .15s;cursor:pointer;box-shadow:var(--shadow-sm);
 }
 .holding-card:hover{border-color:#cbd5e1;box-shadow:var(--shadow-md);}
-.holding-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
-.holding-info{flex:1;min-width:0;}
-.holding-name{font-size:14px;font-weight:700;color:var(--fg);}
+.holding-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.5px;}
+.holding-info{flex:1;min-width:0;overflow:hidden;}
+.holding-name{font-size:14px;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .holding-ticker{font-size:12px;color:var(--mu);margin-top:2px;}
-.holding-val{text-align:right;}
+.holding-val{text-align:right;flex-shrink:0;}
 .holding-price{font-size:14px;font-weight:700;color:var(--fg);}
 .holding-change{font-size:12px;font-weight:600;margin-top:2px;}
 .holding-change.up{color:#16a34a;}
 .holding-change.down{color:#dc2626;}
+
+/* ── Homepage: KPI stat cards ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:32px;}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:500px){.stats-row{grid-template-columns:minmax(0,1fr);}}
+.stat-card{
+  background:#fff;border:1px solid var(--br);border-radius:var(--r);
+  padding:20px;box-shadow:var(--shadow-sm);
+}
+.stat-label{font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.stat-label svg{width:14px;height:14px;}
+.stat-value{font-size:22px;font-weight:800;color:var(--fg);letter-spacing:-.5px;}
+.stat-sub{font-size:12px;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px;}
+.stat-sub.up{color:#16a34a;}
+.stat-sub.down{color:#dc2626;}
+.stat-sub.neutral{color:var(--mu);}
+@media(max-width:480px){
+  .stat-card{padding:16px;}
+  .stat-value{font-size:18px;}
+  .stat-sub{font-size:11px;}
+}
+
+/* ── Homepage: Two-column layout ── */
+.home-grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;align-items:start;}
+@media(max-width:960px){.home-grid{grid-template-columns:minmax(0,1fr);}}
+
+/* ── Watchlist table ── */
+.watchlist-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.watchlist-table{width:100%;border-collapse:collapse;min-width:480px;}
+.watchlist-table th{
+  font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;
+  padding:10px 16px;text-align:left;border-bottom:1px solid var(--br);background:var(--sf);white-space:nowrap;
+}
+.watchlist-table th:last-child,.watchlist-table td:last-child{text-align:right;}
+.watchlist-table td{
+  padding:14px 16px;border-bottom:1px solid #f1f5f9;font-size:13px;
+  vertical-align:middle;white-space:nowrap;
+}
+.watchlist-table tr:last-child td{border-bottom:none;}
+.watchlist-table tr{transition:background .1s;}
+.watchlist-table tbody tr:hover{background:#fafbfc;cursor:pointer;}
+.wl-stock{display:flex;align-items:center;gap:10px;}
+.wl-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;}
+.wl-name{font-weight:700;color:var(--fg);}
+.wl-ticker{font-size:11px;color:var(--mu);}
+.wl-price{font-weight:700;color:var(--fg);}
+.wl-change{font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;}
+.wl-change.up{color:#16a34a;background:#f0fdf4;}
+.wl-change.down{color:#dc2626;background:#fef2f2;}
+.wl-mktcap{font-size:12px;color:var(--su);font-weight:500;}
+
+/* ── Quick actions sidebar ── */
+.quick-actions{display:grid;gap:10px;margin-bottom:20px;}
+.qa-card{
+  border:1.5px solid var(--br);border-radius:var(--r);padding:16px;
+  display:flex;align-items:center;gap:14px;background:#fff;
+  cursor:pointer;transition:all .15s;box-shadow:var(--shadow-sm);
+}
+.qa-card:hover{border-color:#94a3b8;box-shadow:var(--shadow-md);}
+.qa-icon{
+  width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.qa-label{font-size:13px;font-weight:700;color:var(--fg);}
+.qa-desc{font-size:11px;color:var(--mu);margin-top:2px;}
+
+/* ── Recent activity ── */
+.activity-item{
+  display:flex;align-items:center;gap:12px;padding:14px 0;
+  border-bottom:1px solid #f1f5f9;
+}
+.activity-item:last-child{border-bottom:none;}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.activity-dot.green{background:#22c55e;}
+.activity-dot.blue{background:#3b82f6;}
+.activity-dot.amber{background:#f59e0b;}
+.activity-text{flex:1;font-size:13px;color:var(--fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.activity-text strong{font-weight:600;}
+.activity-time{font-size:11px;color:var(--mu);white-space:nowrap;}
 
 
 /* ═══════════════════════════════════════
    SCREEN 2 — CHECKOUT (two-column)
 ═══════════════════════════════════════ */
 .checkout-grid{
-  display:grid;grid-template-columns:1fr 400px;gap:36px;
+  display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:36px;
   align-items:start;
 }
 @media(max-width:900px){
-  .checkout-grid{grid-template-columns:1fr;gap:24px;}
+  .checkout-grid{grid-template-columns:minmax(0,1fr);gap:24px;}
+}
+@media(max-width:480px){
+  .checkout-grid{gap:16px;}
+  .merchant-badge{padding:12px 14px;gap:10px;}
 }
 
 /* Merchant badge */
@@ -284,9 +394,9 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
   margin-bottom:28px;box-shadow:var(--shadow-sm);
 }
 .mb-logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.mb-info{flex:1;}
-.mb-name{font-size:15px;font-weight:700;color:var(--fg);}
-.mb-desc{font-size:12px;color:var(--mu);margin-top:2px;}
+.mb-info{flex:1;min-width:0;}
+.mb-name{font-size:15px;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mb-desc{font-size:12px;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mb-verified{width:28px;height:28px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 
 /* Amount card */
@@ -308,6 +418,12 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
   padding:0 16px;background:transparent;
 }
 .amount-field::placeholder{color:#d4d4d4;font-weight:600;}
+@media(max-width:480px){
+  .amount-field{font-size:22px;padding:0 12px;}
+  .amount-prefix{padding:0 12px;font-size:14px;}
+  .chips{gap:6px;}
+  .chip{padding:6px 14px;font-size:12px;}
+}
 .inr-line{font-size:13px;color:var(--su);margin-top:10px;display:flex;align-items:center;gap:6px;}
 .inr-line svg{width:14px;height:14px;color:var(--mu);flex-shrink:0;}
 .chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
@@ -321,7 +437,8 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 .chip.active{background:#000;color:#fff;border-color:#000;}
 
 /* Bank grid */
-.bank-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.bank-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;}
+@media(max-width:480px){.bank-grid{grid-template-columns:minmax(0,1fr);}}
 .bank-option{
   border:1.5px solid var(--br);border-radius:var(--r);
   padding:14px;display:flex;align-items:center;gap:12px;
@@ -341,8 +458,8 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 }
 .bank-option.selected .bank-radio{border-color:#000;background:#000;box-shadow:inset 0 0 0 3px #fff;}
 .bank-logo{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.bank-detail{flex:1;min-width:0;}
-.bank-detail-name{font-size:13px;font-weight:600;color:var(--fg);}
+.bank-detail{flex:1;min-width:0;overflow:hidden;}
+.bank-detail-name{font-size:13px;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bank-detail-acc{font-size:11px;color:var(--mu);font-family:'Inter',monospace;}
 
 /* Others dropdown */
@@ -368,7 +485,9 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 }
 .other-bank-item:last-child{border-bottom:none;}
 .other-bank-item:hover{background:var(--sf);}
+.other-bank-item.selected{background:var(--sf);border-left:3px solid #000;font-weight:700;}
 .other-bank-item .bank-logo{width:32px;height:32px;border-radius:6px;}
+.other-bank-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 
 /* Order summary sidebar */
 .order-summary{position:sticky;top:96px;}
@@ -383,16 +502,25 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 }
 .os-total .os-label{color:rgba(255,255,255,.6);font-size:13px;}
 .os-total .os-value{color:#fff;font-size:18px;font-weight:800;}
+@media(max-width:480px){.os-total{margin:-16px;margin-top:16px;padding:14px 16px;}.os-total .os-value{font-size:16px;}}
 
 
 /* ═══════════════════════════════════════
    SCREEN 3 — CONFIRM & OTP (two-column)
 ═══════════════════════════════════════ */
 .confirm-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:36px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;
   align-items:start;
 }
-@media(max-width:800px){.confirm-grid{grid-template-columns:1fr;}}
+@media(max-width:800px){.confirm-grid{grid-template-columns:minmax(0,1fr);}}
+.conf-total-bar{
+  background:#000;margin:-24px;margin-top:16px;padding:18px 24px;
+  border-radius:0 0 calc(var(--r) - 1px) calc(var(--r) - 1px);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.conf-total-bar span:first-child{color:rgba(255,255,255,.6);font-size:13px;font-weight:500;}
+.conf-total-bar span:last-child{color:#fff;font-size:18px;font-weight:800;}
+@media(max-width:480px){.conf-total-bar{margin:-16px;margin-top:12px;padding:14px 16px;}.conf-total-bar span:last-child{font-size:16px;}}
 
 .summary-row{
   display:flex;justify-content:space-between;align-items:center;
@@ -419,66 +547,70 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
    SCREEN 4 — BANK NET BANKING (centered desktop card)
 ═══════════════════════════════════════ */
 .bank-page-header{
-  background:linear-gradient(135deg,#6d2077,#97144d);
+  background:var(--bank-gradient,linear-gradient(135deg,#6d2077,#97144d));
   padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;
   flex-shrink:0;
 }
 .bank-page-header-logo{font-size:18px;font-weight:800;color:#fff;}
 .bank-page-header-secure{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:rgba(255,255,255,.7);}
 @media(max-width:768px){.bank-page-header{padding:0 20px;}}
+@media(max-width:480px){.bank-page-header{padding:0 14px;height:56px;}.bank-page-header-logo{font-size:16px;}}
 
 .bank-alert{
   background:#fdf2f4;border:1px solid #fecdd3;border-radius:var(--r);
-  padding:14px 18px;display:flex;align-items:center;gap:10px;margin-bottom:24px;
+  padding:14px 18px;display:flex;align-items:flex-start;gap:10px;margin-bottom:24px;
 }
+@media(max-width:480px){.bank-alert{padding:12px 14px;}.bank-alert-text{font-size:12px;}}
 .bank-alert svg{flex-shrink:0;}
 .bank-alert-text{font-size:13px;color:#881337;font-weight:500;line-height:1.5;}
 .bank-alert-text strong{font-weight:700;}
 
-.bank-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow-md);overflow:hidden;border:1px solid var(--br);}
+.bank-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow-md);overflow:hidden;border:1px solid var(--br);max-width:100%;}
 .bank-card-header{padding:16px 24px;border-bottom:1px solid #eee;font-size:15px;font-weight:700;color:#333;}
 .bank-card-body{padding:24px;}
+@media(max-width:480px){.bank-card-header{padding:14px 16px;font-size:14px;}.bank-card-body{padding:16px;}}
 .bank-input{
   display:block;width:100%;height:46px;padding:0 14px;
   border:1.5px solid #ddd;border-radius:8px;
   font-family:inherit;font-size:14px;color:#333;
   outline:none;margin-bottom:14px;transition:border-color .15s;
 }
-.bank-input:focus{border-color:#97144d;box-shadow:0 0 0 3px rgba(151,20,77,.08);}
+.bank-input:focus{border-color:var(--bank-color,#97144d);box-shadow:0 0 0 3px rgba(0,0,0,.06);}
 .bank-btn{
   width:100%;height:48px;border:none;border-radius:var(--r);
-  background:linear-gradient(135deg,#6d2077,#97144d);
+  background:var(--bank-gradient,linear-gradient(135deg,#6d2077,#97144d));
   color:#fff;font-family:inherit;font-size:15px;font-weight:600;
   cursor:pointer;transition:all .15s;
 }
-.bank-btn:hover{opacity:.9;box-shadow:0 4px 12px rgba(151,20,77,.2);}
+.bank-btn:hover{opacity:.9;box-shadow:0 4px 12px rgba(0,0,0,.15);}
 .bank-btn:disabled{opacity:.5;cursor:not-allowed;}
 
 /* Two-column bank layout on desktop */
 .bank-desktop-grid{
-  display:grid;grid-template-columns:1fr 380px;gap:36px;
+  display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:36px;
   align-items:start;
 }
-@media(max-width:860px){.bank-desktop-grid{grid-template-columns:1fr;}}
+@media(max-width:860px){.bank-desktop-grid{grid-template-columns:minmax(0,1fr);}}
 .bank-info-panel{
   background:#fff;border:1px solid var(--br);border-radius:var(--r);
-  padding:24px;box-shadow:var(--shadow-sm);
+  padding:24px;box-shadow:var(--shadow-sm);overflow:hidden;
 }
+@media(max-width:480px){.bank-info-panel{padding:16px;}}
 .bank-info-panel h3{font-size:14px;font-weight:700;color:var(--fg);margin-bottom:16px;}
 .bank-info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13px;}
 .bank-info-row:last-child{border-bottom:none;}
 .bank-info-label{color:var(--mu);font-weight:500;}
-.bank-info-value{font-weight:600;color:var(--fg);text-align:right;}
+.bank-info-value{font-weight:600;color:var(--fg);text-align:right;word-break:break-word;}
 
 
 /* ═══════════════════════════════════════
    SCREEN 5 — LINK BANK (two-column)
 ═══════════════════════════════════════ */
 .link-grid{
-  display:grid;grid-template-columns:1fr 340px;gap:36px;
+  display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:36px;
   align-items:start;
 }
-@media(max-width:860px){.link-grid{grid-template-columns:1fr;}}
+@media(max-width:860px){.link-grid{grid-template-columns:minmax(0,1fr);}}
 
 .link-steps{
   display:flex;align-items:center;justify-content:center;
@@ -504,15 +636,16 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
   padding:16px;background:var(--sf);border-radius:var(--r);margin-bottom:24px;
 }
 .link-bank-badge-logo{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.link-bank-badge-name{font-size:16px;font-weight:700;color:var(--fg);}
+.link-bank-badge-name{font-size:16px;font-weight:700;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .link-bank-badge-sub{font-size:12px;color:var(--mu);margin-top:2px;}
 
 /* Link context panel (right side on desktop) */
 .link-context-panel{position:sticky;top:96px;}
 .link-context-card{
   background:#fff;border:1px solid var(--br);border-radius:var(--r);
-  padding:24px;box-shadow:var(--shadow-sm);margin-bottom:16px;
+  padding:24px;box-shadow:var(--shadow-sm);margin-bottom:16px;overflow:hidden;
 }
+@media(max-width:480px){.link-context-card{padding:16px;}}
 .link-context-card h4{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:12px;}
 .link-context-card p{font-size:12px;color:var(--su);line-height:1.7;margin-bottom:12px;}
 .link-context-card p:last-child{margin-bottom:0;}
@@ -545,14 +678,14 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 /* ═══════════════════════════════════════
    SCREEN 7 — SUCCESS (two-column)
 ═══════════════════════════════════════ */
-.success-hero{text-align:center;padding:48px 0 28px;}
+.success-hero{text-align:center;padding:48px 0 28px;overflow:hidden;}
 .success-check{
   width:80px;height:80px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   margin:0 auto 20px;background:var(--green-bg);
   box-shadow:0 0 0 12px #f0fdf4,0 0 0 24px rgba(220,252,231,.15);
 }
-.success-amount{font-size:32px;font-weight:800;color:var(--fg);margin-bottom:6px;}
+.success-amount{font-size:32px;font-weight:800;color:var(--fg);margin-bottom:6px;word-break:break-word;}
 .success-sub{font-size:14px;color:var(--su);margin-bottom:16px;}
 .success-badge{
   display:inline-flex;align-items:center;gap:5px;
@@ -561,17 +694,18 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 }
 
 .success-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:28px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;
   align-items:start;
 }
-@media(max-width:700px){.success-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){.success-grid{grid-template-columns:minmax(0,1fr);}}
 
 .txn-bar{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
   background:var(--sf);border-radius:var(--r);padding:12px 16px;margin-bottom:20px;
 }
+.txn-bar>div{min-width:0;flex:1;}
 .txn-bar-label{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;}
-.txn-bar-id{font-size:12px;font-weight:700;font-family:'Inter',monospace;color:var(--fg);}
+.txn-bar-id{font-size:12px;font-weight:700;font-family:'Inter',monospace;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .copy-btn{
   width:32px;height:32px;border-radius:8px;background:#fff;
   border:1px solid var(--br);display:flex;align-items:center;justify-content:center;
@@ -586,10 +720,10 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 }
 .detail-cell:last-child{border-bottom:none;}
 .dc-label{color:var(--mu);font-weight:500;}
-.dc-value{font-weight:600;color:var(--fg);text-align:right;}
+.dc-value{font-weight:600;color:var(--fg);text-align:right;word-break:break-word;max-width:55%;}
 
-.next-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
-@media(max-width:500px){.next-actions{grid-template-columns:1fr;}}
+.next-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:20px;}
+@media(max-width:500px){.next-actions{grid-template-columns:minmax(0,1fr);}}
 .next-action{
   border:1.5px solid var(--br);border-radius:var(--r);
   padding:16px;display:flex;align-items:center;gap:12px;
@@ -628,6 +762,151 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .anim{animation:slideUp .35s ease-out both;}
 .ad1{animation-delay:.05s}.ad2{animation-delay:.1s}.ad3{animation-delay:.15s}.ad4{animation-delay:.2s}
+
+
+/* ═══════════════════════════════════════
+   COMPREHENSIVE MOBILE SAFETY (≤ 480px)
+   — catches EVERY remaining overflow —
+═══════════════════════════════════════ */
+@media(max-width:480px){
+  /* Global safety: nothing can exceed viewport */
+  .screen,.page,.navbar,.hero-balance{max-width:100vw;}
+  .page{overflow-x:hidden;padding-left:12px;padding-right:12px;}
+  .card,.bank-card,.bank-info-panel,.link-context-card,.consent-box,.info-note,.merchant-badge,.bank-alert,.link-bank-badge,.txn-bar{max-width:100%;box-sizing:border-box;}
+  .content-xl,.content-lg,.content-md,.content-sm{max-width:100%;box-sizing:border-box;}
+
+  /* Toast: don't let long text push wider than screen */
+  .toast{white-space:normal;max-width:calc(100vw - 32px);text-align:center;padding:10px 18px;font-size:12px;}
+
+  /* Home grid sidebar: tighter spacing */
+  .home-grid{gap:20px;}
+
+  /* Holdings: compact cards */
+  .holding-card{padding:14px 12px;gap:10px;}
+  .holding-icon{width:38px;height:38px;font-size:11px;}
+  .holding-price{font-size:13px;}
+  .holding-change{font-size:11px;}
+  .holding-name{font-size:13px;}
+  .holding-ticker{font-size:11px;}
+
+  /* Watchlist: ensure card contains the scroll */
+  .watchlist-wrap{margin:0 -16px;padding:0 16px;}
+
+  /* Quick actions: tighter */
+  .qa-card{padding:12px;gap:10px;}
+  .qa-icon{width:36px;height:36px;}
+  .qa-label{font-size:12px;}
+  .qa-desc{font-size:10px;}
+
+  /* Activity: wrap text if needed */
+  .activity-item{gap:8px;padding:10px 0;}
+  .activity-text{white-space:normal;font-size:12px;}
+  .activity-time{font-size:10px;}
+
+  /* Stat cards: tighter */
+  .stat-label{font-size:10px;}
+
+  /* Checkout: amount chips wrap to next line */
+  .chips{flex-wrap:wrap;}
+
+  /* Bank option: ensure long names fit */
+  .bank-option{padding:10px 12px;gap:8px;}
+  .bank-logo{width:32px;height:32px;border-radius:6px;}
+  .bank-detail-name{font-size:12px;}
+  .bank-detail-acc{font-size:10px;}
+  .bank-radio{width:16px;height:16px;}
+
+  /* Others dropdown */
+  .other-bank-item{padding:10px 14px;gap:8px;}
+
+  /* Security row */
+  .security-row{gap:12px;padding:12px 0 0;}
+  .security-badge{font-size:10px;gap:3px;}
+
+  /* Order summary row */
+  .os-row{font-size:12px;padding:9px 0;}
+
+  /* Confirm screen OTP section */
+  .otp-title{font-size:16px;}
+  .otp-sub{font-size:12px;}
+
+  /* Bank net banking: smaller form label */
+  .form-label{font-size:11px;}
+
+  /* Link steps: tighter */
+  .link-steps{padding:4px 0 20px;}
+  .link-step-label{font-size:10px;}
+  .link-dot{width:24px;height:24px;font-size:10px;}
+
+  /* Link bank badge */
+  .link-bank-badge{padding:12px;gap:10px;}
+  .link-bank-badge-logo{width:38px;height:38px;}
+  .link-bank-badge-name{font-size:14px;}
+
+  /* Consent box */
+  .consent-box{padding:10px 12px;gap:8px;}
+  .consent-text{font-size:11px;}
+
+  /* Success screen */
+  .success-hero{padding:32px 0 20px;}
+  .success-check{width:64px;height:64px;box-shadow:0 0 0 8px #f0fdf4,0 0 0 16px rgba(220,252,231,.15);}
+  .success-check svg{width:28px;height:28px;}
+  .success-amount{font-size:26px;}
+  .success-sub{font-size:13px;}
+
+  /* Txn bar */
+  .txn-bar{padding:10px 12px;}
+  .txn-bar-id{font-size:11px;}
+
+  /* Detail cells */
+  .detail-cell{padding:10px 0;font-size:12px;}
+
+  /* Next actions */
+  .next-action{padding:12px;gap:10px;}
+  .next-action-icon{width:36px;height:36px;}
+  .next-action-label{font-size:12px;}
+  .next-action-desc{font-size:10px;}
+
+  /* Info notes */
+  .info-note{padding:10px 12px;gap:8px;}
+  .info-note-text{font-size:11px;}
+
+  /* Powered footer */
+  .powered-footer{padding:20px 0 4px;}
+  .powered-footer svg{width:64px;}
+
+  /* Summary rows */
+  .summary-row{padding:10px 0;font-size:12px;}
+  .sum-value.lg{font-size:14px;}
+
+  /* Decentro nav logo smaller on mobile */
+  .nav-powered svg{width:60px;height:auto;}
+
+  /* Bank info rows */
+  .bank-info-row{font-size:12px;padding:8px 0;}
+}
+
+/* Extra small screens (≤ 360px) */
+@media(max-width:360px){
+  .page{padding-left:10px;padding-right:10px;}
+  .navbar{padding:0 10px;}
+  .hero-amount{font-size:26px;}
+  .hero-btn{height:38px;padding:0 14px;font-size:12px;}
+  .holding-card{padding:12px 10px;}
+  .stat-card{padding:12px;}
+  .stat-value{font-size:16px;}
+  .card-header{padding:10px 12px;font-size:12px;}
+  .card-body{padding:12px;}
+  .os-total{margin:-12px;margin-top:12px;padding:12px;}
+  .conf-total-bar{margin:-12px;margin-top:10px;padding:12px;}
+  .bank-card-header{padding:12px;}
+  .bank-card-body{padding:12px;}
+  .bank-input{height:40px;font-size:13px;margin-bottom:10px;}
+  .bank-btn{height:42px;font-size:13px;}
+  .btn-lg{height:44px;font-size:13px;padding:0 12px;}
+  .success-amount{font-size:22px;}
+  .chips .chip{padding:5px 10px;font-size:11px;}
+}
 
 </style>
 </head>
@@ -685,26 +964,155 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 
   <div class="page">
     <div class="content-xl">
-      <div class="section-label anim">Your Holdings</div>
-      <div class="holdings-grid anim ad1">
-        <div class="holding-card">
-          <div class="holding-icon" style="background:#0066cc;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
-          </div>
-          <div class="holding-info"><div class="holding-name">Apple Inc.</div><div class="holding-ticker">AAPL &middot; 5 shares</div></div>
-          <div class="holding-val"><div class="holding-price">$1,092.45</div><div class="holding-change up">+2.34%</div></div>
+
+      <!-- ── Portfolio KPI Stats ── -->
+      <div class="stats-row anim">
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>Portfolio Value</div>
+          <div class="stat-value">$4,839.22</div>
+          <div class="stat-sub up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>+$142.30 (3.02%)</div>
         </div>
-        <div class="holding-card">
-          <div class="holding-icon" style="background:#e31937;">T</div>
-          <div class="holding-info"><div class="holding-name">Tesla Inc.</div><div class="holding-ticker">TSLA &middot; 2 shares</div></div>
-          <div class="holding-val"><div class="holding-price">$503.28</div><div class="holding-change down">-1.12%</div></div>
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Today's P&amp;L</div>
+          <div class="stat-value">+$67.84</div>
+          <div class="stat-sub up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>+1.42% today</div>
         </div>
-        <div class="holding-card">
-          <div class="holding-icon" style="background:#4285f4;">G</div>
-          <div class="holding-info"><div class="holding-name">Alphabet Inc.</div><div class="holding-ticker">GOOGL &middot; 3 shares</div></div>
-          <div class="holding-val"><div class="holding-price">$521.67</div><div class="holding-change up">+0.87%</div></div>
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Invested</div>
+          <div class="stat-value">$4,200.00</div>
+          <div class="stat-sub neutral">Across 8 stocks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>LRS Used</div>
+          <div class="stat-value">$5,447</div>
+          <div class="stat-sub neutral">of $250,000 limit</div>
         </div>
       </div>
+
+      <!-- ── Two-column: Holdings + Sidebar ── -->
+      <div class="home-grid">
+
+        <!-- LEFT — Holdings + Watchlist -->
+        <div>
+          <div class="section-label anim ad1">Your Holdings &middot; 8 Stocks</div>
+          <div class="holdings-grid anim ad1">
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#555;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+              </div>
+              <div class="holding-info"><div class="holding-name">Apple Inc.</div><div class="holding-ticker">AAPL &middot; 5 shares</div></div>
+              <div class="holding-val"><div class="holding-price">$1,092.45</div><div class="holding-change up">+2.34%</div></div>
+            </div>
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#e31937;">T</div>
+              <div class="holding-info"><div class="holding-name">Tesla Inc.</div><div class="holding-ticker">TSLA &middot; 2 shares</div></div>
+              <div class="holding-val"><div class="holding-price">$503.28</div><div class="holding-change down">-1.12%</div></div>
+            </div>
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#4285f4;">G</div>
+              <div class="holding-info"><div class="holding-name">Alphabet Inc.</div><div class="holding-ticker">GOOGL &middot; 3 shares</div></div>
+              <div class="holding-val"><div class="holding-price">$521.67</div><div class="holding-change up">+0.87%</div></div>
+            </div>
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#0668E1;">M</div>
+              <div class="holding-info"><div class="holding-name">Meta Platforms</div><div class="holding-ticker">META &middot; 1 share</div></div>
+              <div class="holding-val"><div class="holding-price">$598.12</div><div class="holding-change up">+1.53%</div></div>
+            </div>
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#FF9900;">A</div>
+              <div class="holding-info"><div class="holding-name">Amazon.com</div><div class="holding-ticker">AMZN &middot; 3 shares</div></div>
+              <div class="holding-val"><div class="holding-price">$562.39</div><div class="holding-change up">+0.64%</div></div>
+            </div>
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#00A4EF;">M</div>
+              <div class="holding-info"><div class="holding-name">Microsoft Corp.</div><div class="holding-ticker">MSFT &middot; 2 shares</div></div>
+              <div class="holding-val"><div class="holding-price">$831.56</div><div class="holding-change down">-0.28%</div></div>
+            </div>
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#76B900;">N</div>
+              <div class="holding-info"><div class="holding-name">NVIDIA Corp.</div><div class="holding-ticker">NVDA &middot; 1 share</div></div>
+              <div class="holding-val"><div class="holding-price">$412.90</div><div class="holding-change up">+3.72%</div></div>
+            </div>
+            <div class="holding-card">
+              <div class="holding-icon" style="background:#E50914;">N</div>
+              <div class="holding-info"><div class="holding-name">Netflix Inc.</div><div class="holding-ticker">NFLX &middot; 1 share</div></div>
+              <div class="holding-val"><div class="holding-price">$316.85</div><div class="holding-change down">-0.41%</div></div>
+            </div>
+          </div>
+
+          <!-- Watchlist -->
+          <div class="section-label anim ad2">Watchlist</div>
+          <div class="card anim ad2" style="margin-bottom:28px;">
+            <div class="watchlist-wrap"><table class="watchlist-table">
+              <thead><tr><th>Stock</th><th>Price</th><th>Change</th><th>Mkt Cap</th></tr></thead>
+              <tbody>
+                <tr><td><div class="wl-stock"><div class="wl-icon" style="background:#1DA1F2;">X</div><div><div class="wl-name">Palantir Technologies</div><div class="wl-ticker">PLTR</div></div></div></td><td class="wl-price">$118.44</td><td><span class="wl-change up">+4.21%</span></td><td class="wl-mktcap">$270B</td></tr>
+                <tr><td><div class="wl-stock"><div class="wl-icon" style="background:#7B61FF;">S</div><div><div class="wl-name">Snowflake Inc.</div><div class="wl-ticker">SNOW</div></div></div></td><td class="wl-price">$174.20</td><td><span class="wl-change up">+1.87%</span></td><td class="wl-mktcap">$57B</td></tr>
+                <tr><td><div class="wl-stock"><div class="wl-icon" style="background:#00C805;">S</div><div><div class="wl-name">Shopify Inc.</div><div class="wl-ticker">SHOP</div></div></div></td><td class="wl-price">$107.33</td><td><span class="wl-change down">-2.14%</span></td><td class="wl-mktcap">$138B</td></tr>
+                <tr><td><div class="wl-stock"><div class="wl-icon" style="background:#FF6B35;">C</div><div><div class="wl-name">CrowdStrike Holdings</div><div class="wl-ticker">CRWD</div></div></div></td><td class="wl-price">$362.17</td><td><span class="wl-change up">+2.08%</span></td><td class="wl-mktcap">$88B</td></tr>
+                <tr><td><div class="wl-stock"><div class="wl-icon" style="background:#6366f1;">C</div><div><div class="wl-name">Coinbase Global</div><div class="wl-ticker">COIN</div></div></div></td><td class="wl-price">$258.90</td><td><span class="wl-change up">+5.32%</span></td><td class="wl-mktcap">$65B</td></tr>
+                <tr><td><div class="wl-stock"><div class="wl-icon" style="background:#006241;">S</div><div><div class="wl-name">Starbucks Corp.</div><div class="wl-ticker">SBUX</div></div></div></td><td class="wl-price">$91.47</td><td><span class="wl-change down">-0.52%</span></td><td class="wl-mktcap">$105B</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- RIGHT — Quick Actions + Recent Activity -->
+        <div>
+          <div class="section-label anim ad1">Quick Actions</div>
+          <div class="quick-actions anim ad1">
+            <div class="qa-card" onclick="go('sc-checkout')">
+              <div class="qa-icon" style="background:#f0fdf4;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+              <div><div class="qa-label">Top Up USD Balance</div><div class="qa-desc">Add funds via bank transfer</div></div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-icon" style="background:#eff6ff;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></div>
+              <div><div class="qa-label">Buy US Stocks</div><div class="qa-desc">Place a new buy order</div></div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-icon" style="background:#fef3c7;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+              <div><div class="qa-label">Withdraw to INR</div><div class="qa-desc">Convert &amp; transfer to bank</div></div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-icon" style="background:#faf5ff;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div><div class="qa-label">Tax Statement</div><div class="qa-desc">Download LRS &amp; TCS report</div></div>
+            </div>
+          </div>
+
+          <div class="section-label anim ad2">Recent Activity</div>
+          <div class="card anim ad2">
+            <div class="card-body" style="padding:16px 20px;">
+              <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div class="activity-text">Bought <strong>2 NVDA</strong> at $398.45</div>
+                <div class="activity-time">2 days ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot blue"></div>
+                <div class="activity-text">Topped up <strong>$500.00</strong> via Axis Bank</div>
+                <div class="activity-time">4 days ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div class="activity-text">Bought <strong>1 META</strong> at $589.20</div>
+                <div class="activity-time">1 week ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot amber"></div>
+                <div class="activity-text">Dividend received <strong>$12.40</strong> from AAPL</div>
+                <div class="activity-time">2 weeks ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot blue"></div>
+                <div class="activity-text">Topped up <strong>$1,000.00</strong> via HDFC Bank</div>
+                <div class="activity-time">3 weeks ago</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- /home-grid -->
     </div>
   </div>
 </div>
@@ -718,10 +1126,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
     <div class="nav-left">
       <button class="nav-back" onclick="go('sc-merchant')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
       <div><div class="nav-title">Top Up USD Balance</div><div class="nav-subtitle">Decentro Payment Gateway</div></div>
-    </div>
-    <div class="nav-powered">
-      <span class="nav-powered-text">Powered by</span>
-      <svg width="90" height="16" viewBox="0 0 2749.67 538.23" style="color:#1C2024;"><use href="#decentro-logo"/></svg>
     </div>
   </nav>
 
@@ -823,10 +1227,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
           <div style="margin-top:16px;">
             <button class="btn btn-primary btn-block btn-lg" id="checkoutBtn" onclick="handleCheckout()">Continue &mdash; $500.00</button>
           </div>
-          <div class="powered-footer">
-            <span>Powered by</span>
-            <svg width="80" height="14" viewBox="0 0 2749.67 538.23" style="color:#94A3B8;"><use href="#decentro-logo"/></svg>
-          </div>
         </div>
       </div>
     </div>
@@ -843,18 +1243,14 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
       <button class="nav-back" onclick="go('sc-checkout')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
       <div><div class="nav-title">Confirm Payment</div><div class="nav-subtitle">Step 1 of 2 &middot; OTP Verification</div></div>
     </div>
-    <div class="nav-powered">
-      <span class="nav-powered-text">Powered by</span>
-      <svg width="90" height="16" viewBox="0 0 2749.67 538.23" style="color:#1C2024;"><use href="#decentro-logo"/></svg>
-    </div>
   </nav>
   <div class="page"><div class="content-lg">
     <div class="confirm-grid">
       <!-- LEFT — Summary -->
       <div class="card anim">
         <div class="card-header">
-          <div class="bank-logo" style="background:#97144d;"><span style="font-size:9px;font-weight:800;color:#fff;">AXIS</span></div>
-          <div><div style="font-size:13px;font-weight:700;color:var(--fg);">Axis Bank &mdash; Savings A/C</div><div style="font-size:11px;color:var(--mu);">Account &bull;&bull;&bull;&bull;6742</div></div>
+          <div class="bank-logo" id="confBankLogo" style="background:#97144d;"><span style="font-size:9px;font-weight:800;color:#fff;" id="confBankLogoText">AXIS</span></div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--fg);" id="confBankName">Axis Bank &mdash; Savings A/C</div><div style="font-size:11px;color:var(--mu);" id="confBankAcc">Account &bull;&bull;&bull;&bull;6742</div></div>
         </div>
         <div class="card-body">
           <div class="summary-row"><span class="sum-label">Top-up Amount</span><span class="sum-value lg" id="confUSD">$500.00</span></div>
@@ -862,7 +1258,7 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
           <div class="summary-row"><span class="sum-label">Amount in INR</span><span class="sum-value" id="confINR">&#8377;41,990.00</span></div>
           <div class="summary-row"><span class="sum-label">GST (18%)</span><span class="sum-value" id="confGST">&#8377;89.82</span></div>
           <div class="summary-row"><span class="sum-label">TCS (5%)</span><span class="sum-value" id="confTCS">&#8377;2,099.50</span></div>
-          <div style="background:#000;margin:-24px;margin-top:16px;padding:18px 24px;border-radius:0 0 calc(var(--r) - 1px) calc(var(--r) - 1px);display:flex;justify-content:space-between;align-items:center;">
+          <div class="conf-total-bar">
             <span style="color:rgba(255,255,255,.6);font-size:13px;font-weight:500;">Total Debit</span>
             <span style="color:#fff;font-size:18px;font-weight:800;" id="confTotal">&#8377;44,179.32</span>
           </div>
@@ -895,8 +1291,8 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
      SCREEN 4 — AXIS INTERNET BANKING (desktop two-column)
 ═══════════════════════════════════════════════════ -->
 <div class="screen" id="sc-bank">
-  <div class="bank-page-header">
-    <div class="bank-page-header-logo">Axis Bank</div>
+  <div class="bank-page-header" id="bankPageHeader">
+    <div class="bank-page-header-logo" id="bankPageName">Axis Bank</div>
     <div class="bank-page-header-secure"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Secure Session</div>
   </div>
   <div class="page" style="background:#f8f9fa;">
@@ -931,7 +1327,7 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
           <div class="bank-info-row"><span class="bank-info-label">Payee</span><span class="bank-info-value">Demo Merchant (via Decentro)</span></div>
           <div class="bank-info-row"><span class="bank-info-label">Purpose</span><span class="bank-info-value">LRS &mdash; Capital Account</span></div>
           <div class="bank-info-row"><span class="bank-info-label">Amount</span><span class="bank-info-value" id="bankInfoAmt">&#8377;44,179.32</span></div>
-          <div class="bank-info-row"><span class="bank-info-label">Account</span><span class="bank-info-value">&bull;&bull;&bull;&bull;6742 (Savings)</span></div>
+          <div class="bank-info-row"><span class="bank-info-label">Account</span><span class="bank-info-value" id="bankInfoAcc">&bull;&bull;&bull;&bull;6742 (Savings)</span></div>
           <div class="bank-info-row"><span class="bank-info-label">Date</span><span class="bank-info-value">22 Apr 2026</span></div>
           <div style="margin-top:20px;">
             <div class="info-note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><div class="info-note-text">This is a <strong>simulated</strong> banking interface for demo purposes. No real funds will be debited.</div></div>
@@ -951,10 +1347,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
     <div class="nav-left">
       <button class="nav-back" onclick="go('sc-checkout')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
       <div><div class="nav-title">Link Bank Account</div><div class="nav-subtitle">New account setup</div></div>
-    </div>
-    <div class="nav-powered">
-      <span class="nav-powered-text">Powered by</span>
-      <svg width="90" height="16" viewBox="0 0 2749.67 538.23" style="color:#1C2024;"><use href="#decentro-logo"/></svg>
     </div>
   </nav>
 
@@ -1013,10 +1405,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <div class="info-note-text">Your bank account will be linked for <strong>future top-ups</strong>. One-time setup verified via OTP.</div>
         </div>
-        <div class="powered-footer">
-          <span>Powered by</span>
-          <svg width="80" height="14" viewBox="0 0 2749.67 538.23" style="color:#94A3B8;"><use href="#decentro-logo"/></svg>
-        </div>
       </div>
     </div>
   </div></div>
@@ -1031,10 +1419,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
     <div class="nav-left">
       <button class="nav-back" onclick="go('sc-link')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
       <div><div class="nav-title">Verify Account</div><div class="nav-subtitle">Step 2 of 3</div></div>
-    </div>
-    <div class="nav-powered">
-      <span class="nav-powered-text">Powered by</span>
-      <svg width="90" height="16" viewBox="0 0 2749.67 538.23" style="color:#1C2024;"><use href="#decentro-logo"/></svg>
     </div>
   </nav>
   <div class="page"><div class="content-lg">
@@ -1071,10 +1455,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <div class="info-note-text">Once verified, your account will be saved for <strong>faster future transactions</strong>. You can unlink at any time from settings.</div>
         </div>
-        <div class="powered-footer">
-          <span>Powered by</span>
-          <svg width="80" height="14" viewBox="0 0 2749.67 538.23" style="color:#94A3B8;"><use href="#decentro-logo"/></svg>
-        </div>
       </div>
     </div>
   </div></div>
@@ -1087,10 +1467,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 <div class="screen" id="sc-success">
   <nav class="navbar">
     <div class="nav-left"><div class="nav-title">Payment Complete</div></div>
-    <div class="nav-powered">
-      <span class="nav-powered-text">Powered by</span>
-      <svg width="90" height="16" viewBox="0 0 2749.67 538.23" style="color:#1C2024;"><use href="#decentro-logo"/></svg>
-    </div>
   </nav>
   <div class="page"><div class="content-lg">
     <div class="success-hero anim">
@@ -1133,10 +1509,6 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
         <div style="margin-top:20px;">
           <button class="btn btn-outline btn-block btn-lg" onclick="go('sc-merchant')">Back to Demo Merchant</button>
         </div>
-        <div class="powered-footer">
-          <span>Powered by</span>
-          <svg width="80" height="14" viewBox="0 0 2749.67 538.23" style="color:#94A3B8;"><use href="#decentro-logo"/></svg>
-        </div>
       </div>
     </div>
   </div></div>
@@ -1151,9 +1523,73 @@ html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- Global Sticky Powered by Decentro -->
+<div class="sticky-powered hidden" id="stickyPowered">
+  <span>Powered by</span>
+  <svg width="80" height="14" viewBox="0 0 2749.67 538.23" style="color:#94A3B8;"><use href="#decentro-logo"/></svg>
+</div>
 
 <script>
 const RATE=83.98;let currentBank='axis',currentAmount=500,timers={};
+
+/* ── Centralised bank data ── */
+const BANKS={
+  axis:{name:'Axis Bank',short:'AXIS',color:'#97144d',gradient:'linear-gradient(135deg,#6d2077,#97144d)',acc:'6742'},
+  icici:{name:'ICICI Bank',short:'ICICI',color:'#f37920',gradient:'linear-gradient(135deg,#f37920,#e65100)',acc:null},
+  hdfc:{name:'HDFC Bank',short:'HDFC',color:'#004b8d',gradient:'linear-gradient(135deg,#004b8d,#01579b)',acc:null},
+  sbi:{name:'State Bank of India',short:'SBI',color:'#22409a',gradient:'linear-gradient(135deg,#22409a,#1a237e)',acc:null},
+  kotak:{name:'Kotak Mahindra Bank',short:'KMB',color:'#ed1c24',gradient:'linear-gradient(135deg,#ed1c24,#b71c1c)',acc:null},
+  bob:{name:'Bank of Baroda',short:'BOB',color:'#f47920',gradient:'linear-gradient(135deg,#f47920,#e65100)',acc:null},
+  pnb:{name:'Punjab National Bank',short:'PNB',color:'#0f4c81',gradient:'linear-gradient(135deg,#0f4c81,#01579b)',acc:null},
+  yes:{name:'YES Bank',short:'YES',color:'#0063a7',gradient:'linear-gradient(135deg,#0063a7,#01579b)',acc:null}
+};
+
+/* Get current bank info (with dynamic account) */
+function getBankInfo(code){
+  const b=BANKS[code]||{name:code,short:code.toUpperCase().slice(0,4),color:'#333',gradient:'linear-gradient(135deg,#333,#555)',acc:null};
+  // If account was set dynamically during linking, read from DOM
+  if(!b.acc){
+    const el=document.getElementById('bank-'+code);
+    if(el){const accEl=el.querySelector('.bank-detail-acc');if(accEl)b.acc=accEl.textContent.replace(/[^\d]/g,'').slice(-4);}
+  }
+  return b;
+}
+
+/* Populate all dynamic bank fields across screens */
+function populateBankScreens(){
+  const b=getBankInfo(currentBank);
+  const accDisplay=b.acc?'\u2022\u2022\u2022\u2022'+b.acc:'Savings A/C';
+
+  // Screen 3 — Confirmation
+  const confLogo=document.getElementById('confBankLogo');
+  if(confLogo)confLogo.style.background=b.color;
+  const confLogoText=document.getElementById('confBankLogoText');
+  if(confLogoText)confLogoText.textContent=b.short;
+  const confName=document.getElementById('confBankName');
+  if(confName)confName.textContent=b.name+' \u2014 Savings A/C';
+  const confAcc=document.getElementById('confBankAcc');
+  if(confAcc)confAcc.textContent='Account '+accDisplay;
+
+  // Screen 4 — Bank login page (set CSS vars for dynamic theming)
+  const bankScreen=document.getElementById('sc-bank');
+  if(bankScreen){
+    bankScreen.style.setProperty('--bank-color',b.color);
+    bankScreen.style.setProperty('--bank-gradient',b.gradient);
+  }
+  const bankHeader=document.getElementById('bankPageHeader');
+  if(bankHeader)bankHeader.style.background=b.gradient;
+  const bankName=document.getElementById('bankPageName');
+  if(bankName)bankName.textContent=b.name;
+  const bankInfoAcc=document.getElementById('bankInfoAcc');
+  if(bankInfoAcc)bankInfoAcc.textContent=accDisplay+' (Savings)';
+  // Update bank alert border color
+  const bankAlert=bankScreen?bankScreen.querySelector('.bank-alert'):null;
+  if(bankAlert)bankAlert.style.borderLeftColor=b.color;
+
+  // Screen 7 — Success
+  const successBank=document.getElementById('successBank');
+  if(successBank)successBank.textContent=b.name+' '+accDisplay;
+}
 
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1161,6 +1597,15 @@ function go(id){
   if(id==='sc-summary'){initOtpGrid('summaryOtpGrid',6,()=>{document.getElementById('summaryPayBtn').disabled=false});startTimer('summaryCountdown',30)}
   if(id==='sc-linkotp'){initOtpGrid('linkOtpGrid',6,onLinkOtpComplete);startTimer('linkCountdown',30)}
   if(id==='sc-bank'){document.getElementById('bankLoginCard').style.display='block';document.getElementById('bankOtpCard').style.display='none'}
+  /* Toggle sticky "Powered by Decentro" — hide on homepage, bank login, and bank OTP screens */
+  const sp=document.getElementById('stickyPowered');
+  const hideOn=['sc-merchant','sc-bank'];
+  if(sp){
+    if(hideOn.includes(id)){sp.classList.add('hidden')}else{sp.classList.remove('hidden')}
+  }
+  /* Add bottom padding to page when sticky footer is visible so content isn't hidden behind it */
+  const pg=document.getElementById(id).querySelector('.page');
+  if(pg){pg.style.paddingBottom=hideOn.includes(id)?'':'60px';}
   window.scrollTo(0,0);
 }
 
@@ -1203,14 +1648,31 @@ function selectBank(b){
   document.querySelectorAll('.bank-option').forEach(c=>c.classList.remove('selected'));
   document.getElementById('bank-'+b).classList.add('selected');
   document.getElementById('othersList').classList.remove('open');
-  document.getElementById('othersBtn').classList.remove('open');
+  const toggleBtn=document.getElementById('othersBtn');
+  toggleBtn.classList.remove('open');
+  toggleBtn.querySelector('span').textContent='Other Banks';
+  toggleBtn.style.borderColor='';
+  toggleBtn.style.background='';
+  /* Clear other-bank-item selection */
+  document.querySelectorAll('.other-bank-item').forEach(o=>o.classList.remove('selected'));
 }
 function toggleOthers(){document.getElementById('othersList').classList.toggle('open');document.getElementById('othersBtn').classList.toggle('open')}
 function selectOtherBank(c,n){
   currentBank=c;
-  document.querySelectorAll('.bank-option').forEach(c=>c.classList.remove('selected'));
+  /* Deselect all primary bank options */
+  document.querySelectorAll('.bank-option').forEach(o=>o.classList.remove('selected'));
+  /* Highlight selected item in dropdown */
+  document.querySelectorAll('.other-bank-item').forEach(o=>o.classList.remove('selected'));
+  const items=document.querySelectorAll('.other-bank-item');
+  items.forEach(item=>{if(item.getAttribute('onclick')&&item.getAttribute('onclick').indexOf("'"+c+"'")!==-1)item.classList.add('selected')});
+  /* Update toggle button to show selected bank name */
+  const toggleBtn=document.getElementById('othersBtn');
+  toggleBtn.querySelector('span').textContent=n+' (Selected)';
+  toggleBtn.style.borderColor='#000';
+  toggleBtn.style.background='#fafbfc';
+  /* Close dropdown */
   document.getElementById('othersList').classList.remove('open');
-  document.getElementById('othersBtn').classList.remove('open');
+  toggleBtn.classList.remove('open');
   showToast(n+' selected');
 }
 
@@ -1225,17 +1687,19 @@ function handleCheckout(){
   document.getElementById('confTCS').textContent=f(tcs);
   document.getElementById('confTotal').textContent=f(total);
   document.getElementById('summaryPayAmt').textContent=f(total);
-  // Check if selected bank is linked (Axis is always linked, others may be linked after linking flow)
+  // Populate all bank-specific fields across screens
+  populateBankScreens();
+
+  // Check if selected bank is linked — use BANKS data (source of truth) or DOM class
   const selectedBankEl=document.getElementById('bank-'+currentBank);
-  const isLinked=currentBank==='axis'||(selectedBankEl&&selectedBankEl.classList.contains('linked'));
+  const isLinked=BANKS[currentBank]&&BANKS[currentBank].acc!==null;
   if(isLinked){
     go('sc-summary');
   }else{
-    const names={icici:'ICICI Bank',hdfc:'HDFC Bank',sbi:'SBI',kotak:'Kotak Mahindra',bob:'Bank of Baroda',pnb:'PNB',yes:'YES Bank'};
-    const colors={icici:'#f37920',hdfc:'#004b8d',sbi:'#22409a',kotak:'#ed1c24',bob:'#f47920',pnb:'#0f4c81',yes:'#0063a7'};
-    document.getElementById('linkBankName').textContent=names[currentBank]||currentBank;
-    document.getElementById('linkBankLogoText').textContent=currentBank.toUpperCase().slice(0,4);
-    document.getElementById('linkBankLogo').style.background=colors[currentBank]||'#333';
+    const bk=getBankInfo(currentBank);
+    document.getElementById('linkBankName').textContent=bk.name;
+    document.getElementById('linkBankLogoText').textContent=bk.short;
+    document.getElementById('linkBankLogo').style.background=bk.color;
     go('sc-link');
   }
 }
@@ -1285,10 +1749,12 @@ function handleSummaryPay(){
   if(getOtp('summaryOtpGrid').length<6)return;
   const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;
   const f=v=>'\u20B9'+v.toLocaleString('en-IN',{minimumFractionDigits:2});
+  const bk=getBankInfo(currentBank);
   document.getElementById('bankPayAmt').innerHTML='<strong>'+f(total)+'</strong>';
   document.getElementById('bankOtpAmt').textContent=f(total);
   document.getElementById('bankInfoAmt').textContent=f(total);
-  goWithLoading('sc-bank','Redirecting to Axis Bank...','Secure banking session');
+  populateBankScreens();
+  goWithLoading('sc-bank','Redirecting to '+bk.name+'...','Secure banking session');
 }
 
 /* Bank Auth */
@@ -1298,9 +1764,12 @@ function handleBankAuth(){
   const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;
   const f=v=>'\u20B9'+v.toLocaleString('en-IN',{minimumFractionDigits:2});
   const nb=1247.50+currentAmount;
+  const bk=getBankInfo(currentBank);
+  const accDisplay=bk.acc?'\u2022\u2022\u2022\u2022'+bk.acc:'Savings A/C';
   document.getElementById('successAmt').textContent='$'+currentAmount.toFixed(2)+' Added!';
   document.getElementById('successUSD').textContent='$'+currentAmount.toFixed(2);
   document.getElementById('successDebit').textContent=f(total);
+  document.getElementById('successBank').textContent=bk.name+' '+accDisplay;
   document.getElementById('successNewBal').textContent='$'+nb.toLocaleString('en-US',{minimumFractionDigits:2});
   document.getElementById('txnIdVal').textContent='DEC-TXN-'+Math.floor(1e9+Math.random()*9e9);
   goWithLoading('sc-success','Processing payment...','Please wait while we confirm');
@@ -1314,32 +1783,60 @@ function toggleConsent(){
 }
 function handleLinkVerify(){
   if(getOtp('linkOtpGrid').length<6)return;
-  // Mark the newly linked bank as linked and selected
-  const names={icici:'ICICI Bank',hdfc:'HDFC Bank',sbi:'SBI',kotak:'Kotak Mahindra',bob:'Bank of Baroda',pnb:'PNB',yes:'YES Bank'};
-  const bankName=names[currentBank]||currentBank;
-  // After loading, go back to checkout with new bank selected & linked
+  const bk=getBankInfo(currentBank);
+  const generatedAcc=String(Math.floor(1000+Math.random()*9000));
+  if(BANKS[currentBank])BANKS[currentBank].acc=generatedAcc;
+
   goWithLoading('sc-checkout','Linking your account...','Verifying with bank');
   setTimeout(()=>{
-    // If the bank option exists in the grid, mark it as linked and selected
-    const bankEl=document.getElementById('bank-'+currentBank);
-    if(bankEl){
-      // Remove selected from all
-      document.querySelectorAll('.bank-option').forEach(c=>c.classList.remove('selected'));
-      bankEl.classList.add('selected','linked');
-      // Add linked tag if not present
+    /* If bank already exists in the grid, just mark it linked & selected */
+    let bankEl=document.getElementById('bank-'+currentBank);
+
+    if(!bankEl){
+      /* Bank was in "Other Banks" dropdown — promote it into the main grid */
+      const grid=document.querySelector('.bank-grid');
+      bankEl=document.createElement('div');
+      bankEl.className='bank-option linked selected';
+      bankEl.id='bank-'+currentBank;
+      bankEl.setAttribute('onclick',"selectBank('"+currentBank+"')");
+      bankEl.innerHTML=
+        '<div class="bank-radio"></div>'+
+        '<div class="bank-logo" style="background:'+bk.color+';"><span style="font-size:9px;font-weight:800;color:#fff;">'+bk.short+'</span></div>'+
+        '<div class="bank-detail"><div class="bank-detail-name">'+bk.name+'</div><div class="bank-detail-acc">\u2022\u2022\u2022\u2022'+generatedAcc+'</div></div>'+
+        '<span class="linked-tag">LINKED</span>';
+      grid.appendChild(bankEl);
+
+      /* Remove from the "Other Banks" dropdown */
+      document.querySelectorAll('.other-bank-item').forEach(item=>{
+        if(item.getAttribute('onclick')&&item.getAttribute('onclick').indexOf("'"+currentBank+"'")!==-1){
+          item.remove();
+        }
+      });
+      /* Reset toggle text if no more items */
+      const remaining=document.querySelectorAll('.other-bank-item');
+      const toggleBtn=document.getElementById('othersBtn');
+      if(remaining.length===0){toggleBtn.style.display='none';document.getElementById('othersList').style.display='none';}
+      else{toggleBtn.querySelector('span').textContent='Other Banks';toggleBtn.style.borderColor='';toggleBtn.style.background='';}
+    } else {
+      /* Bank was already in grid — mark as linked */
+      bankEl.classList.add('linked');
       if(!bankEl.querySelector('.linked-tag')){
         const tag=document.createElement('span');tag.className='linked-tag';tag.textContent='LINKED';
         bankEl.appendChild(tag);
       }
-      // Add a dummy account number
-      const detailAcc=bankEl.querySelector('.bank-detail-acc');
-      if(!detailAcc){
+      if(!bankEl.querySelector('.bank-detail-acc')){
         const acc=document.createElement('div');acc.className='bank-detail-acc';
-        acc.innerHTML='\u2022\u2022\u2022\u20224'+Math.floor(1000+Math.random()*9000);
+        acc.innerHTML='\u2022\u2022\u2022\u2022'+generatedAcc;
         bankEl.querySelector('.bank-detail').appendChild(acc);
       }
     }
-    showToast(bankName+' linked successfully! Selected for top-up.');
+
+    /* Select the newly linked bank */
+    document.querySelectorAll('.bank-option').forEach(c=>c.classList.remove('selected'));
+    bankEl.classList.add('selected');
+    document.querySelectorAll('.other-bank-item').forEach(o=>o.classList.remove('selected'));
+
+    showToast(bk.name+' linked successfully! Selected for top-up.');
   },2200);
 }
 
