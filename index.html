@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decentro — US Stocks Top-Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+/* ═══════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --sf:#F1F5F9;--br:#E2E8F0;--fg:#1C2024;--mu:#94A3B8;--su:#475569;
+  --r:12px;--r2:10px;
+  --green-bg:#dcfce7;--green-tx:#166534;--green-bd:#bbf7d0;
+  --blue-bg:#eff6ff;--blue-tx:#1e40af;--blue-bd:#bfdbfe;
+}
+html,body{margin:0;padding:0;min-height:100vh;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f7fa;color:var(--fg);}
+
+/* ═══════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════ */
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ═══════════════════════════════════════
+   GLOBAL NAV BAR
+═══════════════════════════════════════ */
+.navbar{
+  background:#fff;border-bottom:1px solid var(--br);
+  padding:0 32px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;flex-shrink:0;
+}
+.navbar.dark{background:#0f172a;border-bottom:1px solid rgba(255,255,255,.08);}
+.nav-left{display:flex;align-items:center;gap:16px;}
+.nav-back{
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--br);
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:background .15s;
+}
+.nav-back:hover{background:var(--sf);}
+.navbar.dark .nav-back{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.08);}
+.navbar.dark .nav-back:hover{background:rgba(255,255,255,.15);}
+.navbar.dark .nav-back svg{color:#fff;}
+.nav-title{font-size:16px;font-weight:700;color:var(--fg);}
+.nav-subtitle{font-size:11px;color:var(--mu);font-weight:500;margin-top:1px;}
+.navbar.dark .nav-title{color:#fff;}
+.navbar.dark .nav-subtitle{color:rgba(255,255,255,.45);}
+.nav-logo{display:flex;align-items:center;gap:8px;}
+.nav-logo-text{font-size:11px;color:var(--mu);font-weight:500;}
+.navbar.dark .nav-logo-text{color:rgba(255,255,255,.4);}
+@media(max-width:600px){
+  .navbar{padding:0 16px;height:56px;}
+  .nav-title{font-size:14px;}
+}
+
+/* ═══════════════════════════════════════
+   PAGE CONTAINER — centred content
+═══════════════════════════════════════ */
+.page{
+  flex:1;padding:40px 32px 60px;
+  display:flex;flex-direction:column;align-items:center;
+}
+@media(max-width:600px){.page{padding:20px 16px 40px;}}
+
+/* Content widths */
+.content-sm{width:100%;max-width:520px;}
+.content-md{width:100%;max-width:680px;}
+.content-lg{width:100%;max-width:900px;}
+.content-xl{width:100%;max-width:1100px;}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card{
+  background:#fff;border:1px solid var(--br);border-radius:16px;
+  overflow:hidden;
+}
+.card-header{
+  background:var(--sf);padding:16px 24px;
+  border-bottom:1px solid var(--br);
+  display:flex;align-items:center;gap:12px;
+}
+.card-body{padding:24px;}
+@media(max-width:600px){.card-header{padding:14px 16px;}.card-body{padding:16px;}}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:48px;padding:0 28px;border-radius:var(--r2);
+  font-family:inherit;font-size:14px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-primary{background:#000;color:#fff;}
+.btn-primary:hover{background:#1a1a1a;}
+.btn-primary:disabled{background:var(--br);color:var(--mu);cursor:not-allowed;}
+.btn-outline{background:#fff;color:var(--fg);border:1.5px solid var(--br);}
+.btn-outline:hover{border-color:#000;background:var(--sf);}
+.btn-block{width:100%;justify-content:center;}
+.btn-lg{height:52px;font-size:15px;padding:0 32px;}
+
+/* ═══════════════════════════════════════
+   FORMS
+═══════════════════════════════════════ */
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;font-weight:600;color:var(--su);margin-bottom:6px;display:block;}
+.form-input{
+  display:block;width:100%;height:46px;padding:0 14px;
+  border:1.5px solid var(--br);border-radius:var(--r2);
+  font-family:inherit;font-size:15px;color:var(--fg);background:#fff;
+  outline:none;transition:border-color .15s;
+}
+.form-input:focus{border-color:#000;}
+.form-input::placeholder{color:var(--mu);}
+.form-hint{font-size:11px;color:var(--mu);margin-top:4px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:500px){.form-row{grid-template-columns:1fr;}}
+.form-select{
+  display:block;width:100%;height:46px;padding:0 14px;
+  border:1.5px solid var(--br);border-radius:var(--r2);
+  font-family:inherit;font-size:15px;color:var(--fg);background:#fff;
+  outline:none;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+
+/* ═══════════════════════════════════════
+   OTP INPUTS
+═══════════════════════════════════════ */
+.otp-grid{display:flex;gap:10px;justify-content:center;}
+.otp-input{
+  width:50px;height:58px;border-radius:var(--r2);
+  border:2px solid var(--br);background:#fff;
+  font-family:inherit;font-size:24px;font-weight:700;color:var(--fg);
+  text-align:center;outline:none;-webkit-appearance:none;
+  transition:border-color .15s;
+}
+.otp-input:focus{border-color:#000;background:#fafbfc;}
+.otp-input.filled{border-color:#000;background:#fafbfc;}
+@media(max-width:400px){.otp-input{width:42px;height:50px;font-size:20px;}}
+
+/* ═══════════════════════════════════════
+   POWERED BY DECENTRO FOOTER
+═══════════════════════════════════════ */
+.powered-footer{
+  padding:24px 0 12px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.powered-footer span{font-size:12px;color:var(--mu);font-weight:500;}
+
+/* ═══════════════════════════════════════
+   INFO NOTE
+═══════════════════════════════════════ */
+.info-note{
+  background:var(--blue-bg);border:1px solid var(--blue-bd);
+  border-radius:10px;padding:14px 16px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.info-note svg{flex-shrink:0;margin-top:1px;}
+.info-note-text{font-size:12px;color:var(--blue-tx);font-weight:500;line-height:1.6;}
+.info-note-text strong{font-weight:700;}
+
+/* ═══════════════════════════════════════
+   SECTION LABELS
+═══════════════════════════════════════ */
+.section-label{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
+
+/* ═══════════════════════════════════════
+   SECURITY BADGES
+═══════════════════════════════════════ */
+.security-row{display:flex;align-items:center;justify-content:center;gap:20px;padding:16px 0;}
+.security-badge{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--mu);}
+.security-badge svg{width:14px;height:14px;}
+
+
+/* ═══════════════════════════════════════
+   SCREEN 1 — MERCHANT APP
+═══════════════════════════════════════ */
+.merchant-nav{
+  background:linear-gradient(145deg,#0f172a,#1e293b);
+  border-bottom:none;
+}
+.merchant-logo-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#3b82f6,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+}
+.merchant-name{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.merchant-env{font-size:9px;font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);}
+
+.hero-balance{
+  background:linear-gradient(145deg,#0f172a 0%,#1e293b 60%,#162033 100%);
+  padding:48px 32px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.hero-balance::before{content:'';position:absolute;top:-100px;right:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.12),transparent 70%);}
+.hero-balance::after{content:'';position:absolute;bottom:-60px;left:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.08),transparent 70%);}
+.hero-inner{position:relative;z-index:1;max-width:600px;margin:0 auto;}
+.hero-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.hero-amount{font-size:48px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:4px;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.3);margin-bottom:28px;}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.hero-btn{
+  height:46px;padding:0 28px;border-radius:var(--r2);
+  font-family:inherit;font-size:14px;font-weight:600;
+  display:inline-flex;align-items:center;gap:8px;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.hero-btn.primary{background:#fff;color:#0f172a;}
+.hero-btn.primary:hover{background:#f0f0f0;}
+.hero-btn.secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12);}
+.hero-btn.secondary:hover{background:rgba(255,255,255,.14);}
+@media(max-width:600px){
+  .hero-balance{padding:32px 20px;}
+  .hero-amount{font-size:36px;}
+}
+
+/* Holdings grid */
+.holdings-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;
+  margin-bottom:24px;
+}
+.holding-card{
+  background:#fff;border:1px solid var(--br);border-radius:var(--r);
+  padding:16px;display:flex;align-items:center;gap:14px;
+  transition:border-color .15s;cursor:pointer;
+}
+.holding-card:hover{border-color:#94a3b8;}
+.holding-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.holding-info{flex:1;min-width:0;}
+.holding-name{font-size:14px;font-weight:700;color:var(--fg);}
+.holding-ticker{font-size:12px;color:var(--mu);}
+.holding-val{text-align:right;}
+.holding-price{font-size:14px;font-weight:700;color:var(--fg);}
+.holding-change{font-size:12px;font-weight:600;}
+.holding-change.up{color:#16a34a;}
+.holding-change.down{color:#dc2626;}
+
+
+/* ═══════════════════════════════════════
+   SCREEN 2 — CHECKOUT
+   Two-column on desktop, stacked on mobile
+═══════════════════════════════════════ */
+.checkout-grid{
+  display:grid;grid-template-columns:1fr 380px;gap:32px;
+  align-items:start;
+}
+@media(max-width:860px){
+  .checkout-grid{grid-template-columns:1fr;gap:20px;}
+}
+
+/* Merchant badge */
+.merchant-badge{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;background:#fff;border:1px solid var(--br);border-radius:var(--r);
+  margin-bottom:24px;
+}
+.mb-logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mb-info{flex:1;}
+.mb-name{font-size:15px;font-weight:700;color:var(--fg);}
+.mb-desc{font-size:12px;color:var(--mu);}
+.mb-verified{width:28px;height:28px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* Amount card */
+.amount-card{margin-bottom:24px;}
+.amount-input-row{
+  display:flex;align-items:center;
+  border:2px solid var(--br);border-radius:var(--r);
+  overflow:hidden;transition:border-color .2s;
+}
+.amount-input-row:focus-within{border-color:#000;}
+.amount-prefix{
+  padding:0 16px;font-size:18px;font-weight:700;color:var(--fg);
+  display:flex;align-items:center;gap:8px;
+  border-right:1px solid var(--br);height:56px;
+  background:var(--sf);flex-shrink:0;
+}
+.amount-field{
+  flex:1;height:56px;border:none;outline:none;min-width:0;
+  font-family:inherit;font-size:28px;font-weight:700;color:var(--fg);
+  padding:0 16px;background:transparent;
+}
+.amount-field::placeholder{color:#d4d4d4;font-weight:600;}
+.inr-line{font-size:13px;color:var(--su);margin-top:8px;display:flex;align-items:center;gap:6px;}
+.inr-line svg{width:14px;height:14px;color:var(--mu);flex-shrink:0;}
+.chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.chip{
+  padding:8px 18px;border-radius:100px;
+  border:1.5px solid var(--br);background:#fff;
+  font-family:inherit;font-size:13px;font-weight:600;color:var(--fg);
+  cursor:pointer;transition:all .15s;
+}
+.chip:hover,.chip.active{background:#000;color:#fff;border-color:#000;}
+
+/* Bank grid */
+.bank-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(min-width:861px){.bank-grid{grid-template-columns:1fr 1fr;}}
+.bank-option{
+  border:1.5px solid var(--br);border-radius:var(--r);
+  padding:16px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;background:#fff;transition:all .15s;position:relative;
+}
+.bank-option:hover{border-color:#94a3b8;}
+.bank-option.selected{border-color:#000;background:#fafbfc;box-shadow:0 0 0 3px rgba(0,0,0,.05);}
+.bank-option.linked .linked-tag{
+  position:absolute;top:8px;right:8px;
+  font-size:9px;font-weight:700;padding:2px 8px;
+  border-radius:4px;background:var(--green-bg);color:var(--green-tx);
+  letter-spacing:.4px;
+}
+.bank-radio{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--br);flex-shrink:0;transition:all .15s;
+}
+.bank-option.selected .bank-radio{border-color:#000;background:#000;box-shadow:inset 0 0 0 3px #fff;}
+.bank-logo{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.bank-detail{flex:1;min-width:0;}
+.bank-detail-name{font-size:13px;font-weight:600;color:var(--fg);}
+.bank-detail-acc{font-size:11px;color:var(--mu);font-family:'Inter',monospace;}
+
+/* Others dropdown */
+.others-toggle{
+  width:100%;margin-top:10px;padding:12px 16px;
+  border:1.5px solid var(--br);border-radius:var(--r);
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;background:#fff;font-family:inherit;transition:all .15s;
+}
+.others-toggle.open{border-color:#000;border-radius:var(--r) var(--r) 0 0;border-bottom-color:var(--br);}
+.others-toggle span{font-size:13px;font-weight:600;color:var(--su);}
+.others-toggle svg{color:var(--mu);transition:transform .2s;}
+.others-toggle.open svg{transform:rotate(180deg);}
+.others-dropdown{
+  display:none;border:1.5px solid #000;border-top:none;
+  border-radius:0 0 var(--r) var(--r);overflow:hidden;
+}
+.others-dropdown.open{display:block;}
+.other-bank-item{
+  padding:12px 16px;display:flex;align-items:center;gap:10px;
+  cursor:pointer;background:#fff;border-bottom:1px solid var(--br);
+  transition:background .1s;
+}
+.other-bank-item:last-child{border-bottom:none;}
+.other-bank-item:hover{background:var(--sf);}
+.other-bank-item .bank-logo{width:32px;height:32px;border-radius:6px;}
+
+/* Order summary sidebar */
+.order-summary{position:sticky;top:96px;}
+.os-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:13px;}
+.os-row+.os-row{border-top:1px solid #f1f5f9;}
+.os-label{color:var(--mu);font-weight:500;}
+.os-value{font-weight:600;color:var(--fg);}
+.os-total{
+  background:#000;margin:-24px;margin-top:16px;padding:16px 24px;
+  border-radius:0 0 15px 15px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.os-total .os-label{color:rgba(255,255,255,.6);}
+.os-total .os-value{color:#fff;font-size:18px;font-weight:800;}
+
+
+/* ═══════════════════════════════════════
+   SCREEN 3 — CONFIRM & OTP
+   Two-column: summary left, OTP right
+═══════════════════════════════════════ */
+.confirm-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:32px;
+  align-items:start;
+}
+@media(max-width:780px){.confirm-grid{grid-template-columns:1fr;}}
+
+.summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 0;border-bottom:1px solid #f1f5f9;
+  font-size:13px;
+}
+.summary-row:last-child{border-bottom:none;}
+.sum-label{color:var(--mu);font-weight:500;}
+.sum-value{font-weight:600;color:var(--fg);text-align:right;}
+.sum-value.lg{font-size:16px;font-weight:700;color:#000;}
+
+.otp-hero{text-align:center;margin-bottom:20px;}
+.otp-icon{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--sf);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;
+}
+.otp-title{font-size:18px;font-weight:700;color:var(--fg);margin-bottom:4px;}
+.otp-sub{font-size:13px;color:var(--su);line-height:1.5;}
+.otp-timer{font-size:12px;font-weight:600;color:var(--su);text-align:center;margin-top:10px;}
+
+
+/* ═══════════════════════════════════════
+   SCREEN 4 — BANK NET BANKING
+═══════════════════════════════════════ */
+.bank-header{
+  background:linear-gradient(135deg,#6d2077,#97144d);
+  padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.bank-header-logo{font-size:18px;font-weight:800;color:#fff;}
+.bank-header-secure{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:rgba(255,255,255,.7);}
+@media(max-width:600px){.bank-header{padding:0 16px;}}
+
+.bank-alert{
+  background:#fdf2f4;border:1px solid #fecdd3;border-radius:10px;
+  padding:14px 16px;display:flex;align-items:center;gap:10px;margin-bottom:20px;
+}
+.bank-alert svg{flex-shrink:0;}
+.bank-alert-text{font-size:12px;color:#881337;font-weight:500;line-height:1.5;}
+.bank-alert-text strong{font-weight:700;}
+
+.bank-card{background:#fff;border-radius:var(--r);box-shadow:0 2px 16px rgba(0,0,0,.06);overflow:hidden;}
+.bank-card-header{padding:16px 20px;border-bottom:1px solid #eee;font-size:15px;font-weight:700;color:#333;}
+.bank-card-body{padding:20px;}
+.bank-input{
+  display:block;width:100%;height:46px;padding:0 14px;
+  border:1.5px solid #ddd;border-radius:8px;
+  font-family:inherit;font-size:14px;color:#333;
+  outline:none;margin-bottom:14px;
+}
+.bank-input:focus{border-color:#97144d;}
+.bank-btn{
+  width:100%;height:48px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,#6d2077,#97144d);
+  color:#fff;font-family:inherit;font-size:15px;font-weight:600;
+  cursor:pointer;transition:opacity .15s;
+}
+.bank-btn:hover{opacity:.9;}
+.bank-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+
+/* ═══════════════════════════════════════
+   SCREEN 5 — LINK BANK ACCOUNT
+═══════════════════════════════════════ */
+.link-steps{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;padding:20px 0 32px;
+}
+.link-step{display:flex;align-items:center;gap:6px;}
+.link-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+  background:var(--sf);color:var(--mu);border:2px solid var(--br);
+}
+.link-dot.active{background:#000;color:#fff;border-color:#000;}
+.link-dot.done{background:#000;color:#fff;border-color:#000;}
+.link-step-label{font-size:12px;font-weight:600;color:var(--mu);}
+.link-step-label.active{color:#000;font-weight:700;}
+.link-connector{width:60px;height:2px;background:var(--br);margin:0 8px;}
+.link-connector.done{background:#000;}
+@media(max-width:500px){.link-connector{width:30px;}}
+
+.link-bank-badge{
+  display:flex;align-items:center;gap:12px;
+  padding:16px;background:var(--sf);border-radius:var(--r);margin-bottom:24px;
+}
+.link-bank-badge-logo{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.link-bank-badge-name{font-size:16px;font-weight:700;color:var(--fg);}
+.link-bank-badge-sub{font-size:12px;color:var(--mu);}
+
+
+/* ═══════════════════════════════════════
+   SCREEN 6 — LINK OTP
+═══════════════════════════════════════ */
+.consent-box{
+  background:#f0f9ff;border:1px solid #bae6fd;
+  border-radius:var(--r);padding:14px 16px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.consent-chk{
+  width:22px;height:22px;border-radius:6px;border:2px solid var(--br);
+  background:#fff;flex-shrink:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+  transition:all .15s;
+}
+.consent-chk.on{background:#000;border-color:#000;}
+.consent-chk svg{width:12px;height:12px;color:#fff;display:none;}
+.consent-chk.on svg{display:block;}
+.consent-text{font-size:12px;color:#0369a1;line-height:1.6;font-weight:500;}
+.consent-text strong{font-weight:700;color:#0c4a6e;display:block;margin-bottom:2px;}
+
+
+/* ═══════════════════════════════════════
+   SCREEN 7 — SUCCESS
+═══════════════════════════════════════ */
+.success-hero{text-align:center;padding:48px 0 24px;}
+.success-check{
+  width:88px;height:88px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;background:var(--green-bg);
+  box-shadow:0 0 0 12px #f0fdf4,0 0 0 24px rgba(220,252,231,.2);
+}
+.success-amount{font-size:28px;font-weight:800;color:var(--fg);margin-bottom:4px;}
+.success-sub{font-size:14px;color:var(--su);margin-bottom:14px;}
+.success-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:700;padding:6px 16px;border-radius:100px;
+  background:var(--green-bg);color:var(--green-tx);border:1px solid var(--green-bd);
+}
+
+.txn-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--sf);border-radius:var(--r);padding:12px 16px;margin-bottom:20px;
+}
+.txn-bar-label{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;}
+.txn-bar-id{font-size:12px;font-weight:700;font-family:'Inter',monospace;color:var(--fg);}
+.copy-btn{
+  width:32px;height:32px;border-radius:8px;background:#fff;
+  border:1px solid var(--br);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:all .15s;
+}
+.copy-btn:hover{background:var(--sf);}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green-bd);}
+
+.details-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+}
+.detail-cell{
+  padding:12px 0;display:flex;justify-content:space-between;
+  border-bottom:1px solid var(--br);font-size:13px;
+  grid-column:1/-1;
+}
+.detail-cell:last-child{border-bottom:none;}
+.dc-label{color:var(--mu);font-weight:500;}
+.dc-value{font-weight:600;color:var(--fg);text-align:right;}
+
+.next-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px;}
+@media(max-width:500px){.next-actions{grid-template-columns:1fr;}}
+.next-action{
+  border:1.5px solid var(--br);border-radius:var(--r);
+  padding:16px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;background:#fff;transition:border-color .15s;
+}
+.next-action:hover{border-color:#94a3b8;}
+.next-action-icon{width:40px;height:40px;border-radius:10px;background:var(--sf);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.next-action-label{font-size:13px;font-weight:700;color:var(--fg);}
+.next-action-desc{font-size:11px;color:var(--mu);}
+
+
+/* ═══════════════════════════════════════
+   LOADING OVERLAY
+═══════════════════════════════════════ */
+.loading-overlay{
+  position:fixed;inset:0;background:rgba(255,255,255,.92);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:200;gap:16px;
+}
+.loading-overlay.show{display:flex;}
+.spinner{width:40px;height:40px;border:3px solid var(--br);border-top-color:#000;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;font-weight:600;color:var(--su);}
+.loading-sub{font-size:12px;color:var(--mu);margin-top:-8px;}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  background:#000;color:#fff;padding:12px 24px;border-radius:100px;
+  font-size:13px;font-weight:600;z-index:300;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+  white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.15);
+}
+.toast.show{opacity:1;}
+
+/* Animations */
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:slideUp .4s ease-out both;}
+.ad1{animation-delay:.05s}.ad2{animation-delay:.1s}.ad3{animation-delay:.15s}.ad4{animation-delay:.2s}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 1 — STOCKVAULT MERCHANT APP
+═══════════════════════════════════════════════════ -->
+<div class="screen active" id="sc-merchant">
+  <nav class="navbar merchant-nav">
+    <div class="nav-left">
+      <div class="merchant-logo-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M2 17L12 22 22 17"/><path d="M2 12L12 17 22 12"/><path d="M12 2L2 7 12 12 22 7 12 2Z"/></svg>
+      </div>
+      <span class="merchant-name">StockVault</span>
+    </div>
+    <span class="merchant-env">SANDBOX</span>
+  </nav>
+
+  <div class="hero-balance">
+    <div class="hero-inner">
+      <div class="hero-label">Available USD Balance</div>
+      <div class="hero-amount">$1,247.50</div>
+      <div class="hero-sub">≈ ₹1,04,789.00 · 1 USD = ₹83.98</div>
+      <div class="hero-actions">
+        <button class="hero-btn primary" onclick="go('sc-checkout')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Top Up USD Balance
+        </button>
+        <button class="hero-btn secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
+          Withdraw to INR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="content-lg">
+      <div class="section-label anim">Your Holdings</div>
+      <div class="holdings-grid anim ad1">
+        <div class="holding-card">
+          <div class="holding-icon" style="background:#0066cc;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </div>
+          <div class="holding-info"><div class="holding-name">Apple Inc.</div><div class="holding-ticker">AAPL · 5 shares</div></div>
+          <div class="holding-val"><div class="holding-price">$1,092.45</div><div class="holding-change up">+2.34%</div></div>
+        </div>
+        <div class="holding-card">
+          <div class="holding-icon" style="background:#5865F2;">T</div>
+          <div class="holding-info"><div class="holding-name">Tesla Inc.</div><div class="holding-ticker">TSLA · 2 shares</div></div>
+          <div class="holding-val"><div class="holding-price">$503.28</div><div class="holding-change down">-1.12%</div></div>
+        </div>
+        <div class="holding-card">
+          <div class="holding-icon" style="background:#FF6600;">G</div>
+          <div class="holding-info"><div class="holding-name">Alphabet Inc.</div><div class="holding-ticker">GOOGL · 3 shares</div></div>
+          <div class="holding-val"><div class="holding-price">$521.67</div><div class="holding-change up">+0.87%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 2 — DECENTRO CHECKOUT
+═══════════════════════════════════════════════════ -->
+<div class="screen" id="sc-checkout">
+  <nav class="navbar">
+    <div class="nav-left">
+      <button class="nav-back" onclick="go('sc-merchant')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div><div class="nav-title">Top Up USD Balance</div><div class="nav-subtitle">Decentro Payment Gateway</div></div>
+    </div>
+    <div class="nav-logo">
+      <span class="nav-logo-text">Powered by</span>
+      <svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/></svg>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="content-lg">
+      <!-- Merchant badge -->
+      <div class="merchant-badge anim">
+        <div class="mb-logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M2 17L12 22 22 17"/><path d="M2 12L12 17 22 12"/><path d="M12 2L2 7 12 12 22 7 12 2Z"/></svg></div>
+        <div class="mb-info"><div class="mb-name">StockVault</div><div class="mb-desc">US Equities Investment Account · Verified Merchant</div></div>
+        <div class="mb-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      </div>
+
+      <div class="checkout-grid">
+        <!-- LEFT — Form -->
+        <div>
+          <!-- Amount -->
+          <div class="card anim ad1" style="margin-bottom:24px;">
+            <div class="card-header"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--su)" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span style="font-size:14px;font-weight:700;color:var(--fg);">Enter Amount</span></div>
+            <div class="card-body">
+              <div class="amount-input-row">
+                <div class="amount-prefix">🇺🇸 USD</div>
+                <input class="amount-field" id="amountInput" type="text" inputmode="decimal" placeholder="0.00" value="500.00" oninput="updateAmount()">
+              </div>
+              <div class="inr-line" id="inrEquiv">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                ≈ ₹41,990.00 at ₹83.98/USD
+              </div>
+              <div class="chips" id="amountChips">
+                <button class="chip" data-val="100" onclick="selectChip(this)">$100</button>
+                <button class="chip" data-val="250" onclick="selectChip(this)">$250</button>
+                <button class="chip active" data-val="500" onclick="selectChip(this)">$500</button>
+                <button class="chip" data-val="1000" onclick="selectChip(this)">$1,000</button>
+                <button class="chip" data-val="2500" onclick="selectChip(this)">$2,500</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bank selection -->
+          <div class="card anim ad2">
+            <div class="card-header"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--su)" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg><span style="font-size:14px;font-weight:700;color:var(--fg);">Select Bank</span></div>
+            <div class="card-body">
+              <div class="bank-grid">
+                <div class="bank-option linked selected" id="bank-axis" onclick="selectBank('axis')">
+                  <div class="bank-radio"></div>
+                  <div class="bank-logo" style="background:#97144d;border-radius:8px;"><span style="font-size:9px;font-weight:800;color:#fff;">AXIS</span></div>
+                  <div class="bank-detail"><div class="bank-detail-name">Axis Bank</div><div class="bank-detail-acc">••••6742</div></div>
+                  <span class="linked-tag">LINKED</span>
+                </div>
+                <div class="bank-option" id="bank-icici" onclick="selectBank('icici')">
+                  <div class="bank-radio"></div>
+                  <div class="bank-logo" style="background:#f37920;border-radius:8px;"><span style="font-size:9px;font-weight:800;color:#fff;">ICICI</span></div>
+                  <div class="bank-detail"><div class="bank-detail-name">ICICI Bank</div></div>
+                </div>
+                <div class="bank-option" id="bank-hdfc" onclick="selectBank('hdfc')">
+                  <div class="bank-radio"></div>
+                  <div class="bank-logo" style="background:#004b8d;border-radius:8px;"><span style="font-size:9px;font-weight:800;color:#fff;">HDFC</span></div>
+                  <div class="bank-detail"><div class="bank-detail-name">HDFC Bank</div></div>
+                </div>
+                <div class="bank-option" id="bank-sbi" onclick="selectBank('sbi')">
+                  <div class="bank-radio"></div>
+                  <div class="bank-logo" style="background:#22409a;border-radius:8px;"><span style="font-size:9px;font-weight:800;color:#fff;">SBI</span></div>
+                  <div class="bank-detail"><div class="bank-detail-name">State Bank of India</div></div>
+                </div>
+              </div>
+
+              <button class="others-toggle" id="othersBtn" onclick="toggleOthers()">
+                <span>Other Banks</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="others-dropdown" id="othersList">
+                <div class="other-bank-item" onclick="selectOtherBank('kotak','Kotak Mahindra Bank')"><div class="bank-logo" style="background:#ed1c24;border-radius:6px;"><span style="font-size:7px;font-weight:800;color:#fff;">KMB</span></div><span style="font-size:13px;font-weight:600;color:var(--fg);">Kotak Mahindra Bank</span></div>
+                <div class="other-bank-item" onclick="selectOtherBank('bob','Bank of Baroda')"><div class="bank-logo" style="background:#f47920;border-radius:6px;"><span style="font-size:7px;font-weight:800;color:#fff;">BOB</span></div><span style="font-size:13px;font-weight:600;color:var(--fg);">Bank of Baroda</span></div>
+                <div class="other-bank-item" onclick="selectOtherBank('pnb','Punjab National Bank')"><div class="bank-logo" style="background:#0f4c81;border-radius:6px;"><span style="font-size:7px;font-weight:800;color:#fff;">PNB</span></div><span style="font-size:13px;font-weight:600;color:var(--fg);">Punjab National Bank</span></div>
+                <div class="other-bank-item" onclick="selectOtherBank('yes','YES Bank')"><div class="bank-logo" style="background:#0063a7;border-radius:6px;"><span style="font-size:7px;font-weight:800;color:#fff;">YES</span></div><span style="font-size:13px;font-weight:600;color:var(--fg);">YES Bank</span></div>
+              </div>
+
+              <div class="security-row">
+                <div class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>256-bit SSL</div>
+                <div class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>RBI Compliant</div>
+                <div class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>PCI DSS</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT — Order Summary -->
+        <div class="anim ad3">
+          <div class="card order-summary">
+            <div class="card-header"><span style="font-size:14px;font-weight:700;color:var(--fg);">Order Summary</span></div>
+            <div class="card-body">
+              <div class="os-row"><span class="os-label">Top-up Amount</span><span class="os-value" id="osAmount">$500.00</span></div>
+              <div class="os-row"><span class="os-label">Exchange Rate</span><span class="os-value">₹83.98 / USD</span></div>
+              <div class="os-row"><span class="os-label">Amount in INR</span><span class="os-value" id="osINR">₹41,990.00</span></div>
+              <div class="os-row"><span class="os-label">GST (18% on markup)</span><span class="os-value" id="osGST">₹89.82</span></div>
+              <div class="os-row"><span class="os-label">TCS (5% on remittance)</span><span class="os-value" id="osTCS">₹2,099.50</span></div>
+              <div class="os-total"><span class="os-label">Total Debit</span><span class="os-value" id="osTotal">₹44,179.32</span></div>
+            </div>
+          </div>
+          <div style="margin-top:16px;">
+            <button class="btn btn-primary btn-block btn-lg" id="checkoutBtn" onclick="handleCheckout()">Continue — $500.00</button>
+          </div>
+          <div class="powered-footer">
+            <span>Powered by</span>
+            <svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 3 — CONFIRM PAYMENT + OTP
+═══════════════════════════════════════════════════ -->
+<div class="screen" id="sc-summary">
+  <nav class="navbar"><div class="nav-left"><button class="nav-back" onclick="go('sc-checkout')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div><div class="nav-title">Confirm Payment</div><div class="nav-subtitle">Step 1 of 2 · OTP Verification</div></div></div><div class="nav-logo"><span class="nav-logo-text">Powered by</span><svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/></svg></div></nav>
+  <div class="page"><div class="content-md">
+    <div class="confirm-grid">
+      <div class="card anim"><div class="card-header"><div class="bank-logo" style="background:#97144d;border-radius:8px;"><span style="font-size:9px;font-weight:800;color:#fff;">AXIS</span></div><div><div style="font-size:14px;font-weight:700;color:var(--fg);">Axis Bank — Savings A/C</div><div style="font-size:11px;color:var(--mu);">Account ••••6742</div></div></div><div class="card-body">
+        <div class="summary-row"><span class="sum-label">Top-up Amount</span><span class="sum-value lg" id="confUSD">$500.00</span></div>
+        <div class="summary-row"><span class="sum-label">Exchange Rate</span><span class="sum-value">₹83.98 / USD</span></div>
+        <div class="summary-row"><span class="sum-label">Amount in INR</span><span class="sum-value" id="confINR">₹41,990.00</span></div>
+        <div class="summary-row"><span class="sum-label">GST (18%)</span><span class="sum-value" id="confGST">₹89.82</span></div>
+        <div class="summary-row"><span class="sum-label">TCS (5%)</span><span class="sum-value" id="confTCS">₹2,099.50</span></div>
+        <div style="background:#000;margin:-24px;margin-top:12px;padding:16px 24px;border-radius:0 0 15px 15px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:rgba(255,255,255,.6);font-size:13px;font-weight:500;">Total Debit</span>
+          <span style="color:#fff;font-size:18px;font-weight:800;" id="confTotal">₹44,179.32</span>
+        </div>
+      </div></div>
+
+      <div class="anim ad1">
+        <div class="card"><div class="card-body" style="text-align:center;">
+          <div class="otp-hero">
+            <div class="otp-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--su)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="otp-title">Verify with OTP</div>
+            <div class="otp-sub">Enter the 6-digit code sent to ••••8923</div>
+          </div>
+          <div class="otp-grid" id="summaryOtpGrid"></div>
+          <div class="otp-timer" id="summaryTimer" style="margin-top:12px;">Resend in <span id="summaryCountdown">00:30</span></div>
+          <div style="margin-top:20px;"><button class="btn btn-primary btn-block btn-lg" id="summaryPayBtn" disabled onclick="handleSummaryPay()">Verify & Pay <span id="summaryPayAmt">₹44,179.32</span></button></div>
+        </div></div>
+        <div class="info-note" style="margin-top:16px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><div class="info-note-text"><strong>LRS Remittance</strong> TCS collected under Liberalised Remittance Scheme is adjustable against your income tax.</div></div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 4 — AXIS INTERNET BANKING
+═══════════════════════════════════════════════════ -->
+<div class="screen" id="sc-bank">
+  <div class="bank-header">
+    <div class="bank-header-logo">Axis Bank</div>
+    <div class="bank-header-secure"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Secure Session</div>
+  </div>
+  <div class="page" style="background:#f8f9fa;">
+    <div class="content-sm">
+      <div class="bank-alert anim"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#881337" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="bank-alert-text">Payment of <strong id="bankPayAmt">₹44,179.32</strong> to <strong>StockVault</strong> via Decentro Payment Gateway</div></div>
+      <div class="bank-card anim ad1" id="bankLoginCard"><div class="bank-card-header">Internet Banking Login</div><div class="bank-card-body">
+        <label class="form-label">Customer ID</label><input class="bank-input" type="text" value="CUST8847291" readonly>
+        <label class="form-label">Password</label><input class="bank-input" type="password" value="••••••••" readonly>
+        <button class="bank-btn" onclick="showBankOTP()">Login & Authorize Payment</button>
+      </div></div>
+      <div class="bank-card anim" id="bankOtpCard" style="display:none;"><div class="bank-card-body" style="text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:#333;margin-bottom:4px;">Transaction Authorization</div>
+        <div style="font-size:13px;color:#666;margin-bottom:20px;line-height:1.5;">Enter OTP sent to ••••8923 to authorize <span id="bankOtpAmt">₹44,179.32</span></div>
+        <div class="otp-grid" id="bankOtpGrid"></div>
+        <div style="margin-top:20px;"><button class="bank-btn" id="bankAuthBtn" disabled onclick="handleBankAuth()">Authorize Payment</button></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 5 — LINK NEW BANK ACCOUNT
+═══════════════════════════════════════════════════ -->
+<div class="screen" id="sc-link">
+  <nav class="navbar"><div class="nav-left"><button class="nav-back" onclick="go('sc-checkout')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div><div class="nav-title">Link Bank Account</div><div class="nav-subtitle">New account setup</div></div></div><div class="nav-logo"><span class="nav-logo-text">Powered by</span><svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/></svg></div></nav>
+
+  <div class="page"><div class="content-sm">
+    <div class="link-steps anim">
+      <div class="link-step"><div class="link-dot active">1</div><span class="link-step-label active">Details</span></div>
+      <div class="link-connector"></div>
+      <div class="link-step"><div class="link-dot">2</div><span class="link-step-label">Verify</span></div>
+      <div class="link-connector"></div>
+      <div class="link-step"><div class="link-dot">3</div><span class="link-step-label">Done</span></div>
+    </div>
+    <div class="link-bank-badge anim ad1">
+      <div class="link-bank-badge-logo" id="linkBankLogo" style="background:#004b8d;"><span style="font-size:10px;font-weight:800;color:#fff;" id="linkBankLogoText">HDFC</span></div>
+      <div><div class="link-bank-badge-name" id="linkBankName">HDFC Bank</div><div class="link-bank-badge-sub">Link your savings or current account</div></div>
+    </div>
+    <div class="info-note anim ad1" style="margin-bottom:24px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><div class="info-note-text">Your bank account will be linked for <strong>future top-ups</strong>. One-time setup verified via OTP.</div></div>
+
+    <div class="card anim ad2" style="margin-bottom:24px;"><div class="card-header"><span style="font-size:13px;font-weight:700;color:var(--fg);">Identity Verification</span></div><div class="card-body">
+      <div class="form-group"><label class="form-label">Full Name (as per bank records)</label><input class="form-input" type="text" placeholder="Enter full name"></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">PAN Number</label><input class="form-input" type="text" placeholder="ABCDE1234F" style="text-transform:uppercase;"></div><div class="form-group"><label class="form-label">Mobile Number</label><input class="form-input" type="tel" placeholder="+91 98xxxxxxxx"></div></div>
+    </div></div>
+    <div class="card anim ad3" style="margin-bottom:24px;"><div class="card-header"><span style="font-size:13px;font-weight:700;color:var(--fg);">Bank Account Details</span></div><div class="card-body">
+      <div class="form-group"><label class="form-label">Account Number</label><input class="form-input" type="text" placeholder="Enter account number"></div>
+      <div class="form-group"><label class="form-label">Confirm Account Number</label><input class="form-input" type="text" placeholder="Re-enter account number"></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">IFSC Code</label><input class="form-input" type="text" placeholder="e.g. HDFC0001234" style="text-transform:uppercase;"><div class="form-hint">Find IFSC on your cheque book or bank statement</div></div><div class="form-group"><label class="form-label">Account Type</label><select class="form-select"><option>Savings Account</option><option>Current Account</option></select></div></div>
+    </div></div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="go('sc-linkotp')">Proceed to Verify</button>
+    <div class="powered-footer"><span>Powered by</span><svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/></svg></div>
+  </div></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 6 — LINK OTP VERIFICATION
+═══════════════════════════════════════════════════ -->
+<div class="screen" id="sc-linkotp">
+  <nav class="navbar"><div class="nav-left"><button class="nav-back" onclick="go('sc-link')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div><div class="nav-title">Verify Account</div><div class="nav-subtitle">Step 2 of 3</div></div></div><div class="nav-logo"><span class="nav-logo-text">Powered by</span><svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/></svg></div></nav>
+  <div class="page"><div class="content-sm">
+    <div class="link-steps anim">
+      <div class="link-step"><div class="link-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span class="link-step-label">Details</span></div>
+      <div class="link-connector done"></div>
+      <div class="link-step"><div class="link-dot active">2</div><span class="link-step-label active">Verify</span></div>
+      <div class="link-connector"></div>
+      <div class="link-step"><div class="link-dot">3</div><span class="link-step-label">Done</span></div>
+    </div>
+    <div class="card anim ad1"><div class="card-body" style="text-align:center;">
+      <div class="otp-hero">
+        <div class="otp-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--su)" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div class="otp-title">OTP Verification</div>
+        <div class="otp-sub">Enter the 6-digit code sent to your registered mobile</div>
+      </div>
+      <div class="otp-grid" id="linkOtpGrid"></div>
+      <div class="otp-timer" style="margin-top:12px;">Resend in <span id="linkCountdown">00:30</span></div>
+    </div></div>
+    <div class="consent-box anim ad2" style="margin-top:16px;margin-bottom:16px;">
+      <div class="consent-chk on" id="consentChk" onclick="toggleConsent()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="consent-text"><strong>Account Linking Consent</strong>I authorize Decentro to verify and link my bank account for LRS remittances via StockVault.</div>
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" id="linkVerifyBtn" disabled onclick="handleLinkVerify()">Verify & Link Account</button>
+    <div class="powered-footer"><span>Powered by</span><svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/></svg></div>
+  </div></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 7 — SUCCESS
+═══════════════════════════════════════════════════ -->
+<div class="screen" id="sc-success">
+  <nav class="navbar"><div class="nav-left"><div class="nav-title">Payment Complete</div></div><div class="nav-logo"><span class="nav-logo-text">Powered by</span><svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/></svg></div></nav>
+  <div class="page"><div class="content-sm">
+    <div class="success-hero anim">
+      <div class="success-check"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="success-amount" id="successAmt">$500.00 Added!</div>
+      <div class="success-sub">Your USD balance has been topped up successfully</div>
+      <div class="success-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Payment Successful</div>
+    </div>
+    <div class="txn-bar anim ad1"><div><div class="txn-bar-label">Transaction ID</div><div class="txn-bar-id" id="txnIdVal">DEC-TXN-2426042287</div></div><button class="copy-btn" onclick="copyTxnId()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+    <div class="card anim ad2" style="margin-bottom:24px;"><div class="card-body">
+      <div class="detail-cell"><span class="dc-label">Top-up Amount</span><span class="dc-value" id="successUSD" style="font-size:15px;font-weight:700;">$500.00</span></div>
+      <div class="detail-cell"><span class="dc-label">Debited from</span><span class="dc-value" id="successBank">Axis Bank ••••6742</span></div>
+      <div class="detail-cell"><span class="dc-label">Amount Debited</span><span class="dc-value" id="successDebit">₹44,179.32</span></div>
+      <div class="detail-cell"><span class="dc-label">Exchange Rate</span><span class="dc-value">₹83.98 / USD</span></div>
+      <div class="detail-cell"><span class="dc-label">Date & Time</span><span class="dc-value">22 Apr 2026, 10:14 AM</span></div>
+      <div class="detail-cell"><span class="dc-label">Purpose</span><span class="dc-value">LRS — Capital Account</span></div>
+      <div class="detail-cell"><span class="dc-label">New USD Balance</span><span class="dc-value" id="successNewBal" style="color:#16a34a;font-weight:700;">$1,747.50</span></div>
+    </div></div>
+    <div class="section-label anim ad3">What's next?</div>
+    <div class="next-actions anim ad4">
+      <div class="next-action"><div class="next-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--su)" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></div><div><div class="next-action-label">Browse US Stocks</div><div class="next-action-desc">Invest your topped-up balance</div></div></div>
+      <div class="next-action"><div class="next-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--su)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="next-action-label">Download Receipt</div><div class="next-action-desc">Save for your records</div></div></div>
+    </div>
+    <div style="margin-top:24px;"><button class="btn btn-outline btn-block btn-lg" onclick="go('sc-merchant')">Back to StockVault</button></div>
+    <div class="powered-footer"><span>Powered by</span><svg width="80" height="16" viewBox="0 0 2749.67 538.23" xmlns="http://www.w3.org/2000/svg"><polygon fill="#1C2024" points="1589.49 315.17 1435.68 121.4 1435.23 120.87 1375.32 120.87 1375.32 417.62 1435.64 417.62 1435.64 223.31 1589.45 417.08 1589.9 417.62 1649.81 417.62 1649.81 120.87 1589.49 120.87 1589.49 315.17"/><rect fill="#0092ff" x="120.6" y="357.11" width="60.28" height="60.28"/><path fill="#1C2024" d="M250.46,120.82H120.69v176.27h60.11v-116h68c62.42,0,102.83,34.9,102.83,88.17s-40.41,88.16-102.83,88.16h-7.73v60.25h9.39c96.25,0,162-59.37,162-148.41s-65.77-148.44-162-148.44h0Z"/><polygon fill="#1C2024" points="532.99 299.14 643.44 299.14 643.44 238.86 532.99 238.86 532.99 181.2 703.17 181.2 703.17 120.62 472.75 120.62 472.75 417.38 703.72 417.38 703.72 357.29 532.99 357.29 532.99 299.14"/><polygon fill="#1C2024" points="1144.31 299.14 1254.76 299.14 1254.76 238.86 1144.31 238.86 1144.31 181.2 1314.48 181.2 1314.48 120.62 1084.06 120.62 1084.06 417.38 1315.04 417.38 1315.04 357.29 1144.31 357.29 1144.31 299.14"/><polygon fill="#1C2024" points="1710.09 180.9 1810.42 180.9 1810.42 416.9 1870.7 416.9 1870.7 180.9 1971.03 180.9 1971.03 120.62 1710.09 120.62 1710.09 180.9"/><path fill="#1C2024" d="M2273.07,226.87c0-61.16-49.34-106.01-114.55-106.01h-127.21v296.76h60.26v-85.62h45.95l11.06-.34,57.67,85.96h66.82l-64.21-97.33c41.46-16.21,64.21-50.5,64.21-93.42h0ZM2091.59,181.14h64.33c56.97,0,56.97,38.25,56.97,45.73,0,7.93,0,44.81-56.97,44.81h-64.33v-90.54h0Z"/><path fill="#1C2024" d="M2587.03,163.29c-27.04-27.03-64.55-41.85-105.7-41.85s-78.72,14.92-105.78,42c-27.07,27.08-42.04,64.69-42.04,105.81s14.93,78.69,42.04,105.8,64.64,42.01,105.78,42.01,78.72-14.87,105.74-41.85c27.02-26.99,42.04-64.69,42.04-105.95s-14.97-78.9-42.09-105.95l.01-.02ZM2418.6,203.4c16.03-16.67,38.28-25.86,62.69-25.86s46.6,9.19,62.69,25.86c16.09,16.67,24.97,40.13,24.97,65.84s-8.86,49.08-24.97,65.83c-16.1,16.75-38.28,25.86-62.69,25.86s-46.66-9.18-62.69-25.86-24.97-40.13-24.97-65.83,8.87-49.09,24.97-65.84Z"/><path fill="#1C2024" d="M1021.78,368.71l1.07,1.17c-1.7,1.91-3.46,3.77-5.28,5.59-24.05,24.05-56.46,38.49-92.31,41.38-4.43.35-8.91.53-13.43.53s-8.91-.18-13.29-.53c-4.49-.36-8.92-.9-13.29-1.61l-6.49-1.21h-.02l-6.38-1.47h-.02l-2.37-.62c-3.15-.85-6.26-1.8-9.33-2.84l-2.3-.8c-1.85-.66-3.69-1.36-5.51-2.1l-3.6-1.52-.01,0-3.55-1.61-.01,0c-14.71-6.92-28.07-16.23-39.55-27.72-27.11-27.15-42.04-64.75-42.04-105.92s14.97-78.82,42.04-105.93c15.66-15.67,34.81-27.28,56.15-34.3l2.07-.66h.01l7.47-2.12,5.07-1.21h.01c5.44-1.2,11-2.12,16.65-2.75l6.82-.61c3.79-.26,7.61-.39,11.47-.39l2.89.02,1.63.04,2.57.09,1.91.09,2.14.12.4.03c2.12.15,4.23.33,6.33.56l3.18.37,2.68.37c2.27.33,4.52.7,6.75,1.12l4.64.95,4.58,1.08,2.27.59c2.27.62,4.51,1.28,6.72,1.98,21.69,6.94,41.15,18.61,57.01,34.48,2.01,2,3.95,4.06,5.81,6.19l-36.33,35.62-.56.48-5.5,5.4c-1.98-2.63-4.12-5.15-6.41-7.52-16.09-16.69-38.28-25.89-62.69-25.89-22.62,0-43.38,7.9-59.06,22.34l-.55.51-3.08,3.04c-16.09,16.77-24.96,40.19-24.96,65.91s8.94,49.21,24.96,65.9l2.77,2.75c15.78,14.96,36.89,23.14,59.92,23.14,24.41,0,46.59-9.12,62.69-25.89,2.23-2.32,4.32-4.77,6.26-7.34l31.49,31.26.54.59,8.95,8.89v-.02Z"/></svg></div>
+  </div></div>
+</div>
+
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Processing...</div>
+  <div class="loading-sub" id="loadingSub"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+
+<script>
+const RATE=83.98;let currentBank='axis',currentAmount=500,timers={};
+
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='sc-summary'){initOtpGrid('summaryOtpGrid',6,()=>{document.getElementById('summaryPayBtn').disabled=false});startTimer('summaryCountdown',30)}if(id==='sc-linkotp'){initOtpGrid('linkOtpGrid',6,onLinkOtpComplete);startTimer('linkCountdown',30)}if(id==='sc-bank'){document.getElementById('bankLoginCard').style.display='block';document.getElementById('bankOtpCard').style.display='none'}window.scrollTo(0,0)}
+function goWithLoading(id,t,s){const o=document.getElementById('loadingOverlay');document.getElementById('loadingText').textContent=t||'Processing...';document.getElementById('loadingSub').textContent=s||'';o.classList.add('show');setTimeout(()=>{o.classList.remove('show');go(id)},2000)}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+
+function updateAmount(){const v=parseFloat(document.getElementById('amountInput').value.replace(/[^0-9.]/g,''))||0;currentAmount=v;updateCalc()}
+function selectChip(el){currentAmount=parseInt(el.dataset.val);document.getElementById('amountInput').value=currentAmount.toFixed(2);document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');updateCalc()}
+function updateCalc(){const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;const f=(v)=>'₹'+v.toLocaleString('en-IN',{minimumFractionDigits:2});document.getElementById('inrEquiv').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>≈ '+f(inr)+' at ₹'+RATE+'/USD';document.getElementById('osAmount').textContent='$'+currentAmount.toFixed(2);document.getElementById('osINR').textContent=f(inr);document.getElementById('osGST').textContent=f(gst);document.getElementById('osTCS').textContent=f(tcs);document.getElementById('osTotal').textContent=f(total);document.getElementById('checkoutBtn').textContent='Continue — $'+currentAmount.toFixed(2)}
+
+function selectBank(b){currentBank=b;document.querySelectorAll('.bank-option').forEach(c=>c.classList.remove('selected'));document.getElementById('bank-'+b).classList.add('selected');document.getElementById('othersList').classList.remove('open');document.getElementById('othersBtn').classList.remove('open')}
+function toggleOthers(){document.getElementById('othersList').classList.toggle('open');document.getElementById('othersBtn').classList.toggle('open')}
+function selectOtherBank(c,n){currentBank=c;document.querySelectorAll('.bank-option').forEach(c=>c.classList.remove('selected'));document.getElementById('othersList').classList.remove('open');document.getElementById('othersBtn').classList.remove('open');showToast(n+' selected')}
+
+function handleCheckout(){if(currentAmount<=0){showToast('Enter a valid amount');return}const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;const f=v=>'₹'+v.toLocaleString('en-IN',{minimumFractionDigits:2});document.getElementById('confUSD').textContent='$'+currentAmount.toFixed(2);document.getElementById('confINR').textContent=f(inr);document.getElementById('confGST').textContent=f(gst);document.getElementById('confTCS').textContent=f(tcs);document.getElementById('confTotal').textContent=f(total);document.getElementById('summaryPayAmt').textContent=f(total);if(currentBank==='axis'){go('sc-summary')}else{const names={icici:'ICICI Bank',hdfc:'HDFC Bank',sbi:'SBI',kotak:'Kotak Mahindra',bob:'Bank of Baroda',pnb:'PNB',yes:'YES Bank'};const colors={icici:'#f37920',hdfc:'#004b8d',sbi:'#22409a',kotak:'#ed1c24',bob:'#f47920',pnb:'#0f4c81',yes:'#0063a7'};document.getElementById('linkBankName').textContent=names[currentBank]||currentBank;document.getElementById('linkBankLogoText').textContent=currentBank.toUpperCase().slice(0,4);document.getElementById('linkBankLogo').style.background=colors[currentBank]||'#333';go('sc-link')}}
+
+function initOtpGrid(cid,n,cb){const c=document.getElementById(cid);c.innerHTML='';for(let i=0;i<n;i++){const inp=document.createElement('input');inp.type='text';inp.inputMode='numeric';inp.maxLength=1;inp.className='otp-input';inp.addEventListener('input',function(){this.value=this.value.replace(/[^0-9]/g,'');if(this.value){this.classList.add('filled');const nx=this.nextElementSibling;if(nx&&nx.classList.contains('otp-input'))nx.focus()}checkOtp(cid,n,cb)});inp.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!this.value){const pv=this.previousElementSibling;if(pv&&pv.classList.contains('otp-input')){pv.focus();pv.value='';pv.classList.remove('filled')}}});inp.addEventListener('paste',function(e){e.preventDefault();const p=(e.clipboardData||window.clipboardData).getData('text').replace(/[^0-9]/g,'');const all=c.querySelectorAll('.otp-input');for(let j=0;j<Math.min(p.length,n);j++){all[j].value=p[j];all[j].classList.add('filled')}all[Math.min(p.length,n-1)].focus();checkOtp(cid,n,cb)});c.appendChild(inp)}setTimeout(()=>{const f=c.querySelector('.otp-input');if(f)f.focus()},200)}
+function checkOtp(cid,n,cb){let f=0;document.getElementById(cid).querySelectorAll('.otp-input').forEach(i=>{if(i.value)f++});if(f===n&&cb)cb()}
+function getOtp(cid){let v='';document.getElementById(cid).querySelectorAll('.otp-input').forEach(i=>v+=i.value);return v}
+function onLinkOtpComplete(){document.getElementById('linkVerifyBtn').disabled=!document.getElementById('consentChk').classList.contains('on')}
+
+function startTimer(sid,s){if(timers[sid])clearInterval(timers[sid]);let r=s;const el=document.getElementById(sid);el.textContent='00:'+String(r).padStart(2,'0');timers[sid]=setInterval(()=>{r--;el.textContent='00:'+String(r).padStart(2,'0');if(r<=0){clearInterval(timers[sid]);el.parentElement.innerHTML='<a style="font-size:12px;font-weight:600;color:#000;cursor:pointer;text-decoration:underline;" onclick="restartTimer(\''+sid+'\')">Resend OTP</a>'}},1000)}
+function restartTimer(sid){event.target.parentElement.innerHTML='Resend in <span id="'+sid+'">00:30</span>';startTimer(sid,30)}
+
+function handleSummaryPay(){if(getOtp('summaryOtpGrid').length<6)return;const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;const f=v=>'₹'+v.toLocaleString('en-IN',{minimumFractionDigits:2});document.getElementById('bankPayAmt').innerHTML='<strong>'+f(total)+'</strong>';document.getElementById('bankOtpAmt').textContent=f(total);goWithLoading('sc-bank','Redirecting to Axis Bank...','Secure banking session')}
+
+function showBankOTP(){document.getElementById('bankLoginCard').style.display='none';document.getElementById('bankOtpCard').style.display='block';initOtpGrid('bankOtpGrid',6,()=>{document.getElementById('bankAuthBtn').disabled=false})}
+function handleBankAuth(){if(getOtp('bankOtpGrid').length<6)return;const inr=currentAmount*RATE,gst=inr*.00214,tcs=inr*.05,total=inr+gst+tcs;const f=v=>'₹'+v.toLocaleString('en-IN',{minimumFractionDigits:2});const nb=1247.50+currentAmount;document.getElementById('successAmt').textContent='$'+currentAmount.toFixed(2)+' Added!';document.getElementById('successUSD').textContent='$'+currentAmount.toFixed(2);document.getElementById('successDebit').textContent=f(total);document.getElementById('successNewBal').textContent='$'+nb.toLocaleString('en-US',{minimumFractionDigits:2});document.getElementById('txnIdVal').textContent='DEC-TXN-'+Math.floor(1e9+Math.random()*9e9);goWithLoading('sc-success','Processing payment...','Please wait while we confirm')}
+
+function toggleConsent(){const el=document.getElementById('consentChk');el.classList.toggle('on');const ok=getOtp('linkOtpGrid').length===6&&el.classList.contains('on');document.getElementById('linkVerifyBtn').disabled=!ok}
+function handleLinkVerify(){if(getOtp('linkOtpGrid').length<6)return;goWithLoading('sc-checkout','Linking your account...','Verifying with bank');setTimeout(()=>showToast('Bank account linked successfully!'),2200)}
+function copyTxnId(){navigator.clipboard.writeText(document.getElementById('txnIdVal').textContent).then(()=>{document.querySelector('.copy-btn').classList.add('copied');showToast('Transaction ID copied!');setTimeout(()=>document.querySelector('.copy-btn').classList.remove('copied'),2000)}).catch(()=>showToast('Copied!'))}
+</script>
+
+</body>
+</html>
